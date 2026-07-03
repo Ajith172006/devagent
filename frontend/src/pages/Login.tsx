@@ -7,6 +7,7 @@ export function Login() {
   const [loading, setLoading] = useState(false);
 
   const handleGoogle = async () => {
+    if (!auth) return;
     setError(null);
     setLoading(true);
     try {

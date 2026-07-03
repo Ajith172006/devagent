@@ -9,6 +9,7 @@ import { LeetcodeModule } from './leetcode/leetcode.module';
 import { GithubModule } from './github/github.module';
 import { AiModule } from './ai/ai.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
+import { AdminModule } from './admin/admin.module';
 
 import { Snippet } from './snippets/snippet.entity';
 import { Note } from './notes/note.entity';
@@ -32,6 +33,7 @@ import { LeetcodeEntry } from './leetcode/leetcode-entry.entity';
     GithubModule,
     AiModule,
     PortfolioModule,
+    AdminModule,
   ],
 })
 export class AppModule {}
