@@ -1,33 +1,33 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
 import { ConfigService } from '@nestjs/config';
-import Anthropic from '@anthropic-ai/sdk';
+import { GoogleGenerativeAI, GenerativeModel } from '@google/generative-ai';
 import { DebugCodeDto } from './dto/debug-code.dto';
 import { ExplainCodeDto } from './dto/explain-code.dto';
 
 @Injectable()
 export class AiService {
-  private client: Anthropic | null = null;
+  private genAI: GoogleGenerativeAI | null = null;
   private readonly model: string;
 
   constructor(private readonly config: ConfigService) {
-    this.model = this.config.get<string>('ANTHROPIC_MODEL') || 'claude-sonnet-4-6';
+    this.model = this.config.get<string>('GEMINI_MODEL') || 'gemini-1.5-flash';
   }
 
-  private getClient(): Anthropic {
-    const apiKey = this.config.get<string>('ANTHROPIC_API_KEY');
+  private getModel(): GenerativeModel {
+    const apiKey = this.config.get<string>('GEMINI_API_KEY');
     if (!apiKey) {
       throw new InternalServerErrorException(
-        'ANTHROPIC_API_KEY is not set. Add it to your .env file to use AI features.',
+        'GEMINI_API_KEY is not set. Add it to your .env file to use AI features.',
       );
     }
-    if (!this.client) {
-      this.client = new Anthropic({ apiKey });
+    if (!this.genAI) {
+      this.genAI = new GoogleGenerativeAI(apiKey);
     }
-    return this.client;
+    return this.genAI.getGenerativeModel({ model: this.model });
   }
 
   async debugCode(dto: DebugCodeDto) {
-    const client = this.getClient();
+    const model = this.getModel();
 
     const prompt = [
       `You are an expert ${dto.language || ''} debugger helping a developer inside "DevAgent", a developer workspace tool.`,
@@ -48,17 +48,12 @@ export class AiService {
       .filter(Boolean)
       .join('\n');
 
-    const response = await client.messages.create({
-      model: this.model,
-      max_tokens: 2000,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    return { result: this.extractText(response) };
+    const result = await model.generateContent(prompt);
+    return { result: result.response.text() };
   }
 
   async explainCode(dto: ExplainCodeDto) {
-    const client = this.getClient();
+    const model = this.getModel();
     const level = dto.level || 'intermediate';
 
     const prompt = [
@@ -71,19 +66,7 @@ export class AiService {
       '```',
     ].join('\n');
 
-    const response = await client.messages.create({
-      model: this.model,
-      max_tokens: 2000,
-      messages: [{ role: 'user', content: prompt }],
-    });
-
-    return { result: this.extractText(response) };
-  }
-
-  private extractText(response: Anthropic.Message): string {
-    return response.content
-      .map((block) => (block.type === 'text' ? block.text : ''))
-      .filter(Boolean)
-      .join('\n');
+    const result = await model.generateContent(prompt);
+    return { result: result.response.text() };
   }
 }
