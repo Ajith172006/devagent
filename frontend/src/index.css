@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+@theme {
+  --font-display: "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
+
+  --color-ink: #0e1017;
+  --color-ink-panel: #171a24;
+  --color-ink-panel-raised: #1e2230;
+  --color-ink-border: #262b3a;
+  --color-text: #e7e9f0;
+  --color-text-muted: #8b90a3;
+  --color-text-faint: #565c72;
+
+  --color-amber: #e8b339;
+  --color-amber-dim: #a5822c;
+  --color-diff-green: #4fae84;
+  --color-diff-green-dim: #2f6b52;
+  --color-diff-red: #e2596b;
+  --color-diff-red-dim: #8a3542;
+}
+
+@layer base {
+  html {
+    background-color: var(--color-ink);
+    color: var(--color-text);
+    font-family: var(--font-body);
+  }
+
+  body {
+    min-height: 100vh;
+  }
+
+  h1, h2, h3, h4 {
+    font-family: var(--font-display);
+    letter-spacing: -0.01em;
+  }
+
+  code, pre, .font-data {
+    font-family: var(--font-mono);
+  }
+
+  ::selection {
+    background: var(--color-amber);
+    color: var(--color-ink);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-amber);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+      animation-duration: 0.01ms !important;
+      animation-iteration-count: 1 !important;
+      transition-duration: 0.01ms !important;
+      scroll-behavior: auto !important;
+    }
+  }
+}
+
+@layer components {
+  /* the diff-gutter card: DevAgent's signature element.
+     a thin colored bar on the left edge, borrowed from git diff
+     markers, colors the card according to what it represents. */
+  .gutter-card {
+    position: relative;
+    background: var(--color-ink-panel);
+    border: 1px solid var(--color-ink-border);
+    border-radius: 10px;
+    padding-left: 1.25rem;
+    overflow: hidden;
+  }
+
+  .gutter-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 4px;
+    background: var(--gutter-color, var(--color-text-faint));
+  }
+
+  .hash-tag {
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    color: var(--color-text-faint);
+    letter-spacing: 0.02em;
+  }
+
+  .scrollbar-thin::-webkit-scrollbar {
+    width: 8px;
+    height: 8px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-thumb {
+    background: var(--color-ink-border);
+    border-radius: 4px;
+  }
+  .scrollbar-thin::-webkit-scrollbar-track {
+    background: transparent;
+  }
+}

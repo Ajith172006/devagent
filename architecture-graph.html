@@ -1,0 +1,410 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>DevAgent — Architecture Graph</title>
+<script src="https://unpkg.com/cytoscape@3.29.2/dist/cytoscape.min.js"></script>
+<style>
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  :root {
+    --bg: #0f1115; --panel: #161923; --panel2: #1d2130;
+    --border: #262a36; --text: #e8e9ed; --muted: #9298a8; --faint: #4b5268;
+    --amber: #fbbf24; --green: #5eead4; --blue: #60a5fa;
+    --purple: #a78bfa; --pink: #f472b6; --red: #f87171; --orange: #fb923c;
+    --cyan: #22d3ee;
+  }
+  body { background: var(--bg); color: var(--text); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif; height: 100vh; display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; align-items: center; justify-content: space-between; padding: 12px 20px; border-bottom: 1px solid var(--border); background: var(--panel); flex-shrink: 0; }
+  header h1 { font-size: 15px; font-weight: 600; letter-spacing: -0.01em; }
+  header span { font-size: 12px; color: var(--muted); }
+  .legend { display: flex; gap: 16px; flex-wrap: wrap; }
+  .legend-item { display: flex; align-items: center; gap: 6px; font-size: 11px; color: var(--muted); }
+  .dot { width: 10px; height: 10px; border-radius: 50%; flex-shrink: 0; }
+  #controls { display: flex; gap: 8px; padding: 10px 20px; background: var(--panel); border-bottom: 1px solid var(--border); flex-shrink: 0; overflow-x: auto; }
+  .filter-btn { padding: 4px 12px; border-radius: 20px; border: 1px solid var(--border); background: transparent; color: var(--muted); font-size: 12px; cursor: pointer; white-space: nowrap; transition: all .15s; }
+  .filter-btn:hover { border-color: var(--blue); color: var(--text); }
+  .filter-btn.active { background: var(--blue); border-color: var(--blue); color: #fff; }
+  #main { display: flex; flex: 1; overflow: hidden; }
+  #cy { flex: 1; background: var(--bg); }
+  #sidebar { width: 280px; background: var(--panel); border-left: 1px solid var(--border); overflow-y: auto; flex-shrink: 0; display: flex; flex-direction: column; }
+  #sidebar-header { padding: 14px 16px; border-bottom: 1px solid var(--border); font-size: 12px; color: var(--muted); }
+  #detail { padding: 16px; flex: 1; }
+  .detail-title { font-size: 14px; font-weight: 600; margin-bottom: 4px; }
+  .detail-type { font-size: 11px; color: var(--muted); margin-bottom: 12px; }
+  .detail-section { margin-bottom: 12px; }
+  .detail-section h4 { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: .06em; margin-bottom: 6px; }
+  .tag { display: inline-block; padding: 2px 8px; border-radius: 4px; font-size: 11px; background: var(--panel2); border: 1px solid var(--border); color: var(--text); margin: 2px; font-family: 'SF Mono', 'Fira Code', monospace; }
+  .tag.endpoint { color: var(--green); border-color: rgba(94,234,212,.3); background: rgba(94,234,212,.05); }
+  .tag.dep { color: var(--purple); border-color: rgba(167,139,250,.3); background: rgba(167,139,250,.05); }
+  .empty-state { color: var(--faint); font-size: 13px; text-align: center; padding: 40px 20px; line-height: 1.6; }
+</style>
+</head>
+<body>
+<header>
+  <div>
+    <h1>DevAgent — Architecture Graph</h1>
+    <span style="font-size:11px;color:var(--muted)">NestJS backend · React frontend · sql.js SQLite</span>
+  </div>
+  <div class="legend">
+    <div class="legend-item"><div class="dot" style="background:var(--amber)"></div>Entry / Config</div>
+    <div class="legend-item"><div class="dot" style="background:var(--green)"></div>DB Module</div>
+    <div class="legend-item"><div class="dot" style="background:var(--blue)"></div>Stateless Module</div>
+    <div class="legend-item"><div class="dot" style="background:var(--purple)"></div>Aggregator Module</div>
+    <div class="legend-item"><div class="dot" style="background:var(--pink)"></div>Frontend Page</div>
+    <div class="legend-item"><div class="dot" style="background:var(--cyan)"></div>Frontend Component</div>
+    <div class="legend-item"><div class="dot" style="background:var(--orange)"></div>External Service</div>
+  </div>
+</header>
+<div id="controls">
+  <button class="filter-btn active" data-filter="all">All</button>
+  <button class="filter-btn" data-filter="backend">Backend Only</button>
+  <button class="filter-btn" data-filter="frontend">Frontend Only</button>
+  <button class="filter-btn" data-filter="db">DB Modules</button>
+  <button class="filter-btn" data-filter="ai">AI Flow</button>
+  <button class="filter-btn" data-filter="portfolio">Portfolio Flow</button>
+  <button class="filter-btn" data-filter="goals">Goals Flow</button>
+</div>
+<div id="main">
+  <div id="cy"></div>
+  <div id="sidebar">
+    <div id="sidebar-header">Click any node to inspect it</div>
+    <div id="detail"><div class="empty-state">Select a node to see<br>its details, endpoints,<br>and dependencies.</div></div>
+  </div>
+</div>
+<script>
+const nodes = [
+  // ── Entry / Infra ──────────────────────────────────────────────────────────
+  { data: { id:'main_ts', label:'main.ts', group:'entry', layer:'backend',
+    desc:'NestJS bootstrap. Enables CORS, global ValidationPipe, sets /api prefix. Listens on :3000.',
+    details:{ type:'Entry Point', notes:['ValidationPipe (whitelist, transform)', 'Global prefix: /api','CORS enabled','PORT env var (default 3000)'] } } },
+  { data: { id:'app_module', label:'AppModule', group:'entry', layer:'backend',
+    desc:'Root NestJS module. Wires ConfigModule, TypeORM (sql.js/SQLite), and all 7 feature modules.',
+    details:{ type:'Root Module', notes:['TypeORM: sql.js driver, autoSave','DB: devagent.sqlite','synchronize: true (dev)','DATABASE_PATH env var'] } } },
+
+  // ── DB Modules ─────────────────────────────────────────────────────────────
+  { data: { id:'snippets_mod', label:'SnippetsModule', group:'db_module', layer:'backend',
+    desc:'CRUD for saved code snippets. Exports SnippetsService for Portfolio.',
+    details:{ type:'DB Module', entity:'Snippet (id, title, code, language, tags[], description, createdAt, updatedAt)',
+      endpoints:['GET /api/snippets?language=&tag=&search=','POST /api/snippets','GET /api/snippets/:id','PATCH /api/snippets/:id','DELETE /api/snippets/:id'],
+      exports:['SnippetsService'] } } },
+  { data: { id:'notes_mod', label:'NotesModule', group:'db_module', layer:'backend',
+    desc:'CRUD for markdown notes with pin support and full-text search.',
+    details:{ type:'DB Module', entity:'Note (id, title, content, tags[], pinned, createdAt, updatedAt)',
+      endpoints:['GET /api/notes?search=','POST /api/notes','GET /api/notes/:id','PATCH /api/notes/:id','DELETE /api/notes/:id'],
+      exports:['NotesService (internal)'] } } },
+  { data: { id:'goals_mod', label:'GoalsModule', group:'db_module', layer:'backend',
+    desc:'Daily coding goals with minute tracking, streak calculation, and upsert by date.',
+    details:{ type:'DB Module', entity:'Goal (id, date, targetMinutes, minutesLogged, focus, completed, createdAt)',
+      endpoints:['GET /api/goals','GET /api/goals/streak','POST /api/goals','GET /api/goals/:date','PUT /api/goals/:date/progress','DELETE /api/goals/:date'],
+      exports:['GoalsService'] } } },
+  { data: { id:'leetcode_mod', label:'LeetcodeModule', group:'db_module', layer:'backend',
+    desc:'LeetCode problem tracker with stats aggregation (solved/attempted per difficulty, top topics).',
+    details:{ type:'DB Module', entity:'LeetcodeEntry (id, title, url, difficulty, status, topics[], notes, solvedAt, createdAt, updatedAt)',
+      endpoints:['GET /api/leetcode?status=&difficulty=&topic=','GET /api/leetcode/stats','POST /api/leetcode','GET /api/leetcode/:id','PATCH /api/leetcode/:id','DELETE /api/leetcode/:id'],
+      exports:['LeetcodeService'] } } },
+
+  // ── Stateless Modules ──────────────────────────────────────────────────────
+  { data: { id:'github_mod', label:'GithubModule', group:'stateless_module', layer:'backend',
+    desc:'Proxy to GitHub REST API. No DB entity. Reads optional GITHUB_TOKEN for auth.',
+    details:{ type:'Stateless Module (GitHub proxy)',
+      endpoints:['GET /api/github/:username/profile','GET /api/github/:username/repos?limit=','GET /api/github/:username/summary'],
+      notes:['GITHUB_TOKEN env var','Returns: profile, totalRepos, languages[], topRepos[]'],
+      exports:['GithubService'] } } },
+  { data: { id:'ai_mod', label:'AiModule', group:'stateless_module', layer:'backend',
+    desc:'Proxy to Anthropic Claude API. Provides AI debugging and code explanation.',
+    details:{ type:'Stateless Module (Anthropic proxy)',
+      endpoints:['POST /api/ai/debug → { code, language?, errorMessage?, context? }','POST /api/ai/explain → { code, language?, level? }'],
+      notes:['ANTHROPIC_API_KEY env var','ANTHROPIC_MODEL env var (default: claude-sonnet-4-6)','max_tokens: 2000'],
+      exports:[] } } },
+
+  // ── Aggregator ─────────────────────────────────────────────────────────────
+  { data: { id:'portfolio_mod', label:'PortfolioModule', group:'aggregator', layer:'backend',
+    desc:'Pure aggregator. Combines Snippets + LeetCode + Goals + GitHub into a JSON report or self-contained HTML export.',
+    details:{ type:'Aggregator Module (no DB entity)',
+      endpoints:['GET /api/portfolio?githubUsername=','GET /api/portfolio/export?githubUsername=&displayName='],
+      notes:['Promise.all across 4 services','Generates dark-theme standalone HTML','featuredSnippets: first 8 snippets'],
+      imports:['SnippetsModule','LeetcodeModule','GithubModule','GoalsModule'] } } },
+
+  // ── External Services ──────────────────────────────────────────────────────
+  { data: { id:'sqlite', label:'sql.js\nSQLite', group:'external', layer:'external',
+    desc:'Embedded SQLite via sql.js driver. Auto-saved to devagent.sqlite on disk.',
+    details:{ type:'Database', notes:['File: devagent.sqlite','TypeORM autoSave + synchronize','Entities: Snippet, Note, Goal, LeetcodeEntry'] } } },
+  { data: { id:'github_api', label:'GitHub\nREST API', group:'external', layer:'external',
+    desc:'https://api.github.com — fetched directly by GithubService.',
+    details:{ type:'External API', notes:['No SDK — raw fetch()','GITHUB_TOKEN for rate-limit bypass','Endpoints used: /users/:u, /users/:u/repos'] } } },
+  { data: { id:'anthropic_api', label:'Anthropic\nClaude API', group:'external', layer:'external',
+    desc:'@anthropic-ai/sdk — messages.create for debug and explain flows.',
+    details:{ type:'External API', notes:['@anthropic-ai/sdk','claude-sonnet-4-6 (default)','max_tokens: 2000'] } } },
+
+  // ── Frontend Core ──────────────────────────────────────────────────────────
+  { data: { id:'vite_proxy', label:'Vite Proxy\n:5173 → :3000', group:'infra', layer:'frontend',
+    desc:'Vite dev server proxies all /api/* requests to http://localhost:3000 (NestJS).',
+    details:{ type:'Dev Proxy', notes:['/api/* → http://localhost:3000','Transparent to frontend code'] } } },
+  { data: { id:'api_client', label:'api/client.ts', group:'infra', layer:'frontend',
+    desc:'Base fetch wrapper. Handles JSON headers, error parsing (ApiError), 204/text responses.',
+    details:{ type:'HTTP Client', notes:['Base URL: /api','Methods: get, post, patch, put, del','Throws ApiError with status code'] } } },
+  { data: { id:'api_modules', label:'api/modules.ts', group:'infra', layer:'frontend',
+    desc:'Domain-scoped API objects: snippetsApi, notesApi, goalsApi, leetcodeApi, githubApi, aiApi, portfolioApi.',
+    details:{ type:'API Layer', notes:['snippetsApi: list, create, update, remove','notesApi: list, create, update, remove','goalsApi: list, streak, setGoal, logProgress, remove','leetcodeApi: list, stats, create, update, remove','githubApi: summary','aiApi: debug, explain','portfolioApi: generate, exportUrl'] } } },
+
+  // ── Layout Components ──────────────────────────────────────────────────────
+  { data: { id:'layout', label:'Layout', group:'component', layer:'frontend',
+    desc:'Shell: renders Sidebar + TopBar + <main> content. Wraps every route.',
+    details:{ type:'Layout Component', notes:['Composes Sidebar + TopBar','h-screen flex layout'] } } },
+  { data: { id:'sidebar', label:'Sidebar', group:'component', layer:'frontend',
+    desc:'Left nav with NavLinks for all 9 routes. Uses lucide-react icons.',
+    details:{ type:'Component', notes:['NavLinks: Dashboard, Snippets, AI Debug, Explain Code, GitHub, LeetCode, Daily Goals, Portfolio, Notes'] } } },
+  { data: { id:'topbar', label:'TopBar', group:'component', layer:'frontend',
+    desc:'Header on every page. Fetches today\'s goal + streak on every mount. Shows progress bar + streak badge.',
+    details:{ type:'Component (live data)', notes:['Calls goalsApi.streak() on every page load','Calls goalsApi.list() on every page load','Shows progress bar (minutesLogged / targetMinutes)','Shows flame streak badge'] } } },
+
+  // ── Pages ──────────────────────────────────────────────────────────────────
+  { data: { id:'pg_dashboard', label:'Dashboard\n/', group:'page', layer:'frontend',
+    desc:'Overview stats: snippet count, LeetCode solved, current streak, note count, difficulty breakdown.',
+    details:{ type:'Page — /', apis:['snippetsApi.list()','notesApi.list()','leetcodeApi.stats()','goalsApi.streak()'] } } },
+  { data: { id:'pg_snippets', label:'Snippets\n/snippets', group:'page', layer:'frontend',
+    desc:'Code snippet library with search, create form, and delete. Debounced search (250ms).',
+    details:{ type:'Page — /snippets', apis:['snippetsApi.list({ search })','snippetsApi.create(...)','snippetsApi.remove(id)'] } } },
+  { data: { id:'pg_debug', label:'AI Debug\n/debug', group:'page', layer:'frontend',
+    desc:'Submit code + optional error message for AI-powered debugging. Single-shot, no persistence.',
+    details:{ type:'Page — /debug', apis:['aiApi.debug({ code, language?, errorMessage? })'] } } },
+  { data: { id:'pg_explain', label:'Explain Code\n/explain', group:'page', layer:'frontend',
+    desc:'AI code explanation with level selector (beginner / intermediate / expert).',
+    details:{ type:'Page — /explain', apis:['aiApi.explain({ code, language?, level })'] } } },
+  { data: { id:'pg_github', label:'GitHub\n/github', group:'page', layer:'frontend',
+    desc:'GitHub profile viewer: profile card, language breakdown, top repos by stars.',
+    details:{ type:'Page — /github', apis:['githubApi.summary(username)'] } } },
+  { data: { id:'pg_leetcode', label:'LeetCode\n/leetcode', group:'page', layer:'frontend',
+    desc:'Problem tracker with difficulty filter, stats cards, add/delete entries.',
+    details:{ type:'Page — /leetcode', apis:['leetcodeApi.list({ difficulty? })','leetcodeApi.stats()','leetcodeApi.create(...)','leetcodeApi.remove(id)'] } } },
+  { data: { id:'pg_goals', label:'Daily Goals\n/goals', group:'page', layer:'frontend',
+    desc:'Goal manager with 12-week contribution heatmap. Set goals, log minutes, view streak.',
+    details:{ type:'Page — /goals', apis:['goalsApi.list()','goalsApi.streak()','goalsApi.setGoal(...)','goalsApi.logProgress(date, minutes)'] } } },
+  { data: { id:'pg_portfolio', label:'Portfolio\n/portfolio', group:'page', layer:'frontend',
+    desc:'Portfolio generator. Preview JSON data or open exported self-contained HTML in new tab.',
+    details:{ type:'Page — /portfolio', apis:['portfolioApi.generate(githubUsername?)','portfolioApi.exportUrl(...) → /api/portfolio/export'] } } },
+  { data: { id:'pg_notes', label:'Notes\n/notes', group:'page', layer:'frontend',
+    desc:'Note manager with search, pin/unpin, create, delete. Debounced search.',
+    details:{ type:'Page — /notes', apis:['notesApi.list(search?)','notesApi.create(...)','notesApi.update(id, { pinned })','notesApi.remove(id)'] } } },
+];
+
+const edges = [
+  // Bootstrap
+  { data: { id:'e_main_app', source:'main_ts', target:'app_module', label:'bootstraps', group:'infra' } },
+  // AppModule → feature modules
+  { data: { id:'e_app_snip', source:'app_module', target:'snippets_mod', label:'imports', group:'infra' } },
+  { data: { id:'e_app_notes', source:'app_module', target:'notes_mod', label:'imports', group:'infra' } },
+  { data: { id:'e_app_goals', source:'app_module', target:'goals_mod', label:'imports', group:'infra' } },
+  { data: { id:'e_app_leet', source:'app_module', target:'leetcode_mod', label:'imports', group:'infra' } },
+  { data: { id:'e_app_gh', source:'app_module', target:'github_mod', label:'imports', group:'infra' } },
+  { data: { id:'e_app_ai', source:'app_module', target:'ai_mod', label:'imports', group:'infra' } },
+  { data: { id:'e_app_port', source:'app_module', target:'portfolio_mod', label:'imports', group:'infra' } },
+  // DB connections
+  { data: { id:'e_snip_db', source:'snippets_mod', target:'sqlite', label:'TypeORM', group:'db' } },
+  { data: { id:'e_notes_db', source:'notes_mod', target:'sqlite', label:'TypeORM', group:'db' } },
+  { data: { id:'e_goals_db', source:'goals_mod', target:'sqlite', label:'TypeORM', group:'db' } },
+  { data: { id:'e_leet_db', source:'leetcode_mod', target:'sqlite', label:'TypeORM', group:'db' } },
+  // External APIs
+  { data: { id:'e_gh_api', source:'github_mod', target:'github_api', label:'fetch()', group:'external' } },
+  { data: { id:'e_ai_api', source:'ai_mod', target:'anthropic_api', label:'SDK', group:'external' } },
+  // Portfolio aggregation
+  { data: { id:'e_port_snip', source:'portfolio_mod', target:'snippets_mod', label:'SnippetsService', group:'portfolio' } },
+  { data: { id:'e_port_leet', source:'portfolio_mod', target:'leetcode_mod', label:'LeetcodeService', group:'portfolio' } },
+  { data: { id:'e_port_gh', source:'portfolio_mod', target:'github_mod', label:'GithubService', group:'portfolio' } },
+  { data: { id:'e_port_goals', source:'portfolio_mod', target:'goals_mod', label:'GoalsService', group:'portfolio' } },
+  // Vite proxy
+  { data: { id:'e_proxy_client', source:'vite_proxy', target:'api_client', label:'', group:'infra' } },
+  { data: { id:'e_proxy_be', source:'vite_proxy', target:'main_ts', label:'/api/*', group:'infra' } },
+  // Frontend API chain
+  { data: { id:'e_client_mods', source:'api_client', target:'api_modules', label:'wraps', group:'infra' } },
+  // Layout
+  { data: { id:'e_layout_side', source:'layout', target:'sidebar', label:'renders', group:'infra' } },
+  { data: { id:'e_layout_top', source:'layout', target:'topbar', label:'renders', group:'infra' } },
+  // TopBar API calls
+  { data: { id:'e_top_goals', source:'topbar', target:'api_modules', label:'goalsApi', group:'goals' } },
+  // Pages → Layout
+  { data: { id:'e_app_layout_d', source:'pg_dashboard', target:'layout', label:'wrapped by', group:'infra' } },
+  // Pages → API modules
+  { data: { id:'e_dash_api', source:'pg_dashboard', target:'api_modules', label:'snippets/notes/leetcode/goals', group:'infra' } },
+  { data: { id:'e_snip_api', source:'pg_snippets', target:'api_modules', label:'snippetsApi', group:'infra' } },
+  { data: { id:'e_debug_api', source:'pg_debug', target:'api_modules', label:'aiApi.debug', group:'ai' } },
+  { data: { id:'e_explain_api', source:'pg_explain', target:'api_modules', label:'aiApi.explain', group:'ai' } },
+  { data: { id:'e_gh_page_api', source:'pg_github', target:'api_modules', label:'githubApi', group:'infra' } },
+  { data: { id:'e_leet_page_api', source:'pg_leetcode', target:'api_modules', label:'leetcodeApi', group:'infra' } },
+  { data: { id:'e_goals_page_api', source:'pg_goals', target:'api_modules', label:'goalsApi', group:'goals' } },
+  { data: { id:'e_port_page_api', source:'pg_portfolio', target:'api_modules', label:'portfolioApi', group:'portfolio' } },
+  { data: { id:'e_notes_page_api', source:'pg_notes', target:'api_modules', label:'notesApi', group:'infra' } },
+  // API modules → backend modules (HTTP)
+  { data: { id:'e_api_snip_be', source:'api_modules', target:'snippets_mod', label:'GET/POST/PATCH/DELETE /snippets', group:'infra' } },
+  { data: { id:'e_api_notes_be', source:'api_modules', target:'notes_mod', label:'GET/POST/PATCH/DELETE /notes', group:'infra' } },
+  { data: { id:'e_api_goals_be', source:'api_modules', target:'goals_mod', label:'GET/POST/PUT/DELETE /goals', group:'goals' } },
+  { data: { id:'e_api_leet_be', source:'api_modules', target:'leetcode_mod', label:'GET/POST/PATCH/DELETE /leetcode', group:'infra' } },
+  { data: { id:'e_api_gh_be', source:'api_modules', target:'github_mod', label:'GET /github/:u/summary', group:'infra' } },
+  { data: { id:'e_api_ai_be', source:'api_modules', target:'ai_mod', label:'POST /ai/debug|explain', group:'ai' } },
+  { data: { id:'e_api_port_be', source:'api_modules', target:'portfolio_mod', label:'GET /portfolio', group:'portfolio' } },
+];
+
+const colorMap = {
+  entry: '#fbbf24', db_module: '#5eead4', stateless_module: '#60a5fa',
+  aggregator: '#a78bfa', page: '#f472b6', component: '#22d3ee',
+  infra: '#94a3b8', external: '#fb923c',
+};
+const edgeColorMap = {
+  infra: '#4b5268', db: '#5eead4', external: '#fb923c',
+  ai: '#60a5fa', portfolio: '#a78bfa', goals: '#fbbf24',
+};
+
+const allNodes = nodes.map(n => n.data.id);
+const filterSets = {
+  all: new Set(allNodes),
+  backend: new Set(['main_ts','app_module','snippets_mod','notes_mod','goals_mod','leetcode_mod','github_mod','ai_mod','portfolio_mod','sqlite','github_api','anthropic_api']),
+  frontend: new Set(['vite_proxy','api_client','api_modules','layout','sidebar','topbar','pg_dashboard','pg_snippets','pg_debug','pg_explain','pg_github','pg_leetcode','pg_goals','pg_portfolio','pg_notes']),
+  db: new Set(['app_module','snippets_mod','notes_mod','goals_mod','leetcode_mod','sqlite']),
+  ai: new Set(['pg_debug','pg_explain','api_modules','api_client','vite_proxy','ai_mod','anthropic_api']),
+  portfolio: new Set(['pg_portfolio','api_modules','api_client','vite_proxy','portfolio_mod','snippets_mod','leetcode_mod','github_mod','goals_mod','sqlite','github_api']),
+  goals: new Set(['topbar','pg_goals','api_modules','api_client','vite_proxy','goals_mod','sqlite']),
+};
+
+const cy = cytoscape({
+  container: document.getElementById('cy'),
+  elements: { nodes, edges },
+  style: [
+    {
+      selector: 'node',
+      style: {
+        'label': 'data(label)',
+        'background-color': (n) => colorMap[n.data('group')] || '#4b5268',
+        'color': '#e8e9ed',
+        'text-valign': 'center',
+        'text-halign': 'center',
+        'font-size': '10px',
+        'font-family': '-apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif',
+        'text-wrap': 'wrap',
+        'text-max-width': '90px',
+        'width': 80,
+        'height': 80,
+        'border-width': 2,
+        'border-color': (n) => colorMap[n.data('group')] || '#4b5268',
+        'border-opacity': 0.4,
+        'text-outline-width': 2,
+        'text-outline-color': '#0f1115',
+      }
+    },
+    { selector: 'node[group="entry"]', style: { shape: 'diamond', width: 90, height: 90 } },
+    { selector: 'node[group="external"]', style: { shape: 'barrel', width: 85, height: 85 } },
+    { selector: 'node[group="page"]', style: { shape: 'round-rectangle', width: 90, height: 60 } },
+    { selector: 'node[group="component"]', style: { shape: 'ellipse', width: 80, height: 60 } },
+    { selector: 'node[group="infra"]', style: { shape: 'round-rectangle', width: 90, height: 55 } },
+    { selector: 'node:selected', style: { 'border-width': 3, 'border-color': '#fff', 'border-opacity': 1 } },
+    { selector: 'node.faded', style: { opacity: 0.15 } },
+    {
+      selector: 'edge',
+      style: {
+        'width': 1.5,
+        'line-color': (e) => edgeColorMap[e.data('group')] || '#4b5268',
+        'target-arrow-color': (e) => edgeColorMap[e.data('group')] || '#4b5268',
+        'target-arrow-shape': 'triangle',
+        'curve-style': 'bezier',
+        'label': 'data(label)',
+        'font-size': '8px',
+        'color': '#9298a8',
+        'text-background-color': '#0f1115',
+        'text-background-opacity': 0.85,
+        'text-background-padding': '2px',
+        'text-outline-width': 0,
+        'arrow-scale': 0.8,
+        opacity: 0.7,
+      }
+    },
+    { selector: 'edge.faded', style: { opacity: 0.05 } },
+    { selector: 'edge:selected', style: { width: 2.5, opacity: 1 } },
+  ],
+  layout: {
+    name: 'cose',
+    idealEdgeLength: () => 140,
+    nodeRepulsion: () => 8000,
+    edgeElasticity: () => 100,
+    gravity: 1.2,
+    numIter: 1000,
+    animate: true,
+    animationDuration: 600,
+    padding: 40,
+    randomize: false,
+    componentSpacing: 60,
+  },
+  wheelSensitivity: 0.3,
+});
+
+// ── Interaction ──────────────────────────────────────────────────────────────
+function showDetail(node) {
+  const d = node.data();
+  const det = d.details || {};
+  const color = colorMap[d.group] || '#4b5268';
+  let html = `<div class="detail-title" style="color:${color}">${d.label.replace(/\n/g,' ')}</div>`;
+  html += `<div class="detail-type">${det.type || d.group}</div>`;
+  if (d.desc) {
+    html += `<div class="detail-section"><h4>Description</h4><p style="font-size:12px;color:#9298a8;line-height:1.5">${d.desc}</p></div>`;
+  }
+  if (det.entity) {
+    html += `<div class="detail-section"><h4>Entity</h4><span class="tag">${det.entity}</span></div>`;
+  }
+  if (det.endpoints?.length) {
+    html += `<div class="detail-section"><h4>Endpoints</h4>${det.endpoints.map(e=>`<span class="tag endpoint">${e}</span>`).join('')}</div>`;
+  }
+  if (det.apis?.length) {
+    html += `<div class="detail-section"><h4>API Calls</h4>${det.apis.map(a=>`<span class="tag endpoint">${a}</span>`).join('')}</div>`;
+  }
+  if (det.exports?.length) {
+    html += `<div class="detail-section"><h4>Exports</h4>${det.exports.map(x=>`<span class="tag dep">${x}</span>`).join('')}</div>`;
+  }
+  if (det.imports?.length) {
+    html += `<div class="detail-section"><h4>Imports</h4>${det.imports.map(x=>`<span class="tag dep">${x}</span>`).join('')}</div>`;
+  }
+  if (det.notes?.length) {
+    html += `<div class="detail-section"><h4>Notes</h4>${det.notes.map(n=>`<span class="tag">${n}</span>`).join('')}</div>`;
+  }
+  // connected nodes
+  const neighbors = node.neighborhood('node').map(n => n.data('label').replace(/\n/g,' ')).join(', ');
+  if (neighbors) html += `<div class="detail-section"><h4>Connected to</h4><p style="font-size:11px;color:#9298a8">${neighbors}</p></div>`;
+  document.getElementById('detail').innerHTML = html;
+  document.getElementById('sidebar-header').textContent = '📌 ' + d.label.replace(/\n/g,' ');
+}
+
+cy.on('tap', 'node', (evt) => {
+  const node = evt.target;
+  cy.elements().removeClass('faded');
+  const connected = node.closedNeighborhood();
+  cy.elements().not(connected).addClass('faded');
+  showDetail(node);
+});
+
+cy.on('tap', (evt) => {
+  if (evt.target === cy) {
+    cy.elements().removeClass('faded');
+    document.getElementById('detail').innerHTML = '<div class="empty-state">Select a node to see<br>its details, endpoints,<br>and dependencies.</div>';
+    document.getElementById('sidebar-header').textContent = 'Click any node to inspect it';
+  }
+});
+
+// ── Filter buttons ────────────────────────────────────────────────────────────
+document.querySelectorAll('.filter-btn').forEach(btn => {
+  btn.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    const filter = btn.dataset.filter;
+    const visible = filterSets[filter];
+    cy.elements().removeClass('faded');
+    if (filter !== 'all') {
+      cy.nodes().forEach(n => {
+        if (!visible.has(n.id())) n.addClass('faded');
+      });
+      cy.edges().forEach(e => {
+        if (!visible.has(e.source().id()) || !visible.has(e.target().id())) e.addClass('faded');
+      });
+    }
+  });
+});
+</script>
+</body>
+</html>
