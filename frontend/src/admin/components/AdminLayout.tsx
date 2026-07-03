@@ -4,9 +4,10 @@ import { useAdmin } from '../AdminContext';
 
 const NAV = [
   { id: 'overview', label: '⬡ Overview' },
+  { id: 'users',    label: '👤 Users' },
   { id: 'snippets', label: '{ } Snippets' },
-  { id: 'notes', label: '✎ Notes' },
-  { id: 'goals', label: '◎ Goals' },
+  { id: 'notes',    label: '✎ Notes' },
+  { id: 'goals',    label: '◎ Goals' },
   { id: 'leetcode', label: '⚡ LeetCode' },
 ];
 

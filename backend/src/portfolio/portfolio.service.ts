@@ -21,11 +21,11 @@ export class PortfolioService {
     private readonly goalsService: GoalsService,
   ) {}
 
-  async generate(options: { githubUsername?: string } = {}): Promise<PortfolioData> {
+  async generate(userId: string, options: { githubUsername?: string } = {}): Promise<PortfolioData> {
     const [snippets, leetcode, streak, github] = await Promise.all([
-      this.snippetsService.findAll({}),
-      this.leetcodeService.stats(),
-      this.goalsService.getStreak(),
+      this.snippetsService.findAll(userId, {}),
+      this.leetcodeService.stats(userId),
+      this.goalsService.getStreak(userId),
       options.githubUsername ? this.githubService.getSummary(options.githubUsername) : Promise.resolve(null),
     ]);
 
@@ -45,8 +45,8 @@ export class PortfolioService {
     };
   }
 
-  async generateHtml(options: { githubUsername?: string; displayName?: string } = {}): Promise<string> {
-    const data = await this.generate(options);
+  async generateHtml(userId: string, options: { githubUsername?: string; displayName?: string } = {}): Promise<string> {
+    const data = await this.generate(userId, options);
     const name = options.displayName || data.github?.profile?.['name'] || data.github?.profile?.['login'] || 'Developer';
     const bio = data.github?.profile?.['bio'] || '';
     const avatar = data.github?.profile?.['avatar_url'] || '';

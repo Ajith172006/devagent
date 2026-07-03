@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
 } from 'typeorm';
 
@@ -10,7 +11,11 @@ export class Goal {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  // ISO date string, e.g. "2026-07-02" — one goal entry per calendar day
+  @Index()
+  @Column({ default: '' })
+  userId: string;
+
+  // ISO date string, e.g. "2026-07-02" — one goal entry per calendar day per user
   @Column()
   date: string;
 

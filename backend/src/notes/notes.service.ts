@@ -12,40 +12,52 @@ export class NotesService {
     private readonly repo: Repository<Note>,
   ) {}
 
-  create(dto: CreateNoteDto): Promise<Note> {
+  create(userId: string, dto: CreateNoteDto): Promise<Note> {
     const note = this.repo.create({
       ...dto,
+      userId,
       tags: dto.tags ?? [],
       pinned: dto.pinned ?? false,
     });
     return this.repo.save(note);
   }
 
-  async findAll(search?: string): Promise<Note[]> {
+  async findAll(userId: string, search?: string): Promise<Note[]> {
     const all = await this.repo.find({
+      where: { userId },
       order: { pinned: 'DESC', updatedAt: 'DESC' },
     });
     if (!search) return all;
     const needle = search.toLowerCase();
-    return all.filter((n) =>
-      `${n.title} ${n.content}`.toLowerCase().includes(needle),
-    );
+    return all.filter((n) => `${n.title} ${n.content}`.toLowerCase().includes(needle));
   }
 
-  async findOne(id: string): Promise<Note> {
-    const note = await this.repo.findOne({ where: { id } });
+  /** Admin: find all without userId filter */
+  findAllAdmin(): Promise<Note[]> {
+    return this.repo.find({ order: { updatedAt: 'DESC' } });
+  }
+
+  async findOne(userId: string, id: string): Promise<Note> {
+    const note = await this.repo.findOne({ where: { id, userId } });
     if (!note) throw new NotFoundException(`Note ${id} not found`);
     return note;
   }
 
-  async update(id: string, dto: UpdateNoteDto): Promise<Note> {
-    const note = await this.findOne(id);
+  async update(userId: string, id: string, dto: UpdateNoteDto): Promise<Note> {
+    const note = await this.findOne(userId, id);
     Object.assign(note, dto);
     return this.repo.save(note);
   }
 
-  async remove(id: string): Promise<void> {
-    const note = await this.findOne(id);
+  async remove(userId: string, id: string): Promise<void> {
+    const note = await this.findOne(userId, id);
+    await this.repo.remove(note);
+  }
+
+  /** Admin: remove by id only */
+  async adminRemove(id: string): Promise<void> {
+    const note = await this.repo.findOne({ where: { id } });
+    if (!note) throw new NotFoundException(`Note ${id} not found`);
     await this.repo.remove(note);
   }
 }

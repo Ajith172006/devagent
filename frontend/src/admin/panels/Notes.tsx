@@ -33,6 +33,7 @@ export function Notes() {
   const tableRows = rows.map(r => ({
     _id: r.id,
     title: r.title,
+    user: <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#565c72' }}>{r.userId.slice(0, 12)}…</span>,
     pinned: r.pinned ? <Badge text="pinned" color="#4fae84" /> : <span style={{ color: '#565c72' }}>—</span>,
     tags: r.tags.length ? r.tags.map(t => <Badge key={t} text={t} color="#8b90a3" />).reduce<React.ReactNode[]>((a, c) => [...a, ' ', c], []) : <span style={{ color: '#565c72' }}>—</span>,
     preview: r.content.slice(0, 80) + (r.content.length > 80 ? '…' : ''),
@@ -52,6 +53,7 @@ export function Notes() {
         <Table
           columns={[
             { key: 'title', label: 'Title' },
+            { key: 'user', label: 'User ID', width: 120 },
             { key: 'pinned', label: 'Pinned', width: 80 },
             { key: 'tags', label: 'Tags' },
             { key: 'preview', label: 'Content preview' },

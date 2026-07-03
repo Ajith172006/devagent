@@ -2,6 +2,7 @@ import {
   Column,
   CreateDateColumn,
   Entity,
+  Index,
   PrimaryGeneratedColumn,
   UpdateDateColumn,
 } from 'typeorm';
@@ -22,6 +23,10 @@ export enum LeetcodeStatus {
 export class LeetcodeEntry {
   @PrimaryGeneratedColumn('uuid')
   id: string;
+
+  @Index()
+  @Column({ default: '' })
+  userId: string;
 
   @Column()
   title: string;

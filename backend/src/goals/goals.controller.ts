@@ -1,4 +1,7 @@
-import { Body, Controller, Delete, Get, Param, Post, Put } from '@nestjs/common';
+import {
+  Body, Controller, Delete, Get, Headers,
+  Param, Post, Put, UnauthorizedException,
+} from '@nestjs/common';
 import { GoalsService } from './goals.service';
 import { CreateGoalDto } from './dto/create-goal.dto';
 import { LogProgressDto } from './dto/log-progress.dto';
@@ -7,33 +10,38 @@ import { LogProgressDto } from './dto/log-progress.dto';
 export class GoalsController {
   constructor(private readonly goalsService: GoalsService) {}
 
+  private uid(h: string): string {
+    if (!h) throw new UnauthorizedException('x-user-id header is required');
+    return h;
+  }
+
   @Post()
-  setGoal(@Body() dto: CreateGoalDto) {
-    return this.goalsService.setGoal(dto);
+  setGoal(@Headers('x-user-id') uid: string, @Body() dto: CreateGoalDto) {
+    return this.goalsService.setGoal(this.uid(uid), dto);
   }
 
   @Get()
-  findAll() {
-    return this.goalsService.findAll();
+  findAll(@Headers('x-user-id') uid: string) {
+    return this.goalsService.findAll(this.uid(uid));
   }
 
   @Get('streak')
-  getStreak() {
-    return this.goalsService.getStreak();
+  getStreak(@Headers('x-user-id') uid: string) {
+    return this.goalsService.getStreak(this.uid(uid));
   }
 
   @Get(':date')
-  findByDate(@Param('date') date: string) {
-    return this.goalsService.findByDate(date);
+  findByDate(@Headers('x-user-id') uid: string, @Param('date') date: string) {
+    return this.goalsService.findByDate(this.uid(uid), date);
   }
 
   @Put(':date/progress')
-  logProgress(@Param('date') date: string, @Body() dto: LogProgressDto) {
-    return this.goalsService.logProgress(date, dto);
+  logProgress(@Headers('x-user-id') uid: string, @Param('date') date: string, @Body() dto: LogProgressDto) {
+    return this.goalsService.logProgress(this.uid(uid), date, dto);
   }
 
   @Delete(':date')
-  remove(@Param('date') date: string) {
-    return this.goalsService.remove(date);
+  remove(@Headers('x-user-id') uid: string, @Param('date') date: string) {
+    return this.goalsService.remove(this.uid(uid), date);
   }
 }

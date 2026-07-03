@@ -10,11 +10,13 @@ import { GithubModule } from './github/github.module';
 import { AiModule } from './ai/ai.module';
 import { PortfolioModule } from './portfolio/portfolio.module';
 import { AdminModule } from './admin/admin.module';
+import { UsersModule } from './users/users.module';
 
 import { Snippet } from './snippets/snippet.entity';
 import { Note } from './notes/note.entity';
 import { Goal } from './goals/goal.entity';
 import { LeetcodeEntry } from './leetcode/leetcode-entry.entity';
+import { User } from './users/user.entity';
 
 @Module({
   imports: [
@@ -23,9 +25,10 @@ import { LeetcodeEntry } from './leetcode/leetcode-entry.entity';
       type: 'sqljs',
       autoSave: true,
       location: process.env.DATABASE_PATH || 'devagent.sqlite',
-      entities: [Snippet, Note, Goal, LeetcodeEntry],
+      entities: [Snippet, Note, Goal, LeetcodeEntry, User],
       synchronize: true,
     }),
+    UsersModule,
     SnippetsModule,
     NotesModule,
     GoalsModule,

@@ -32,6 +32,12 @@ export function makeAdminApi(secret: string) {
   return {
     overview: () => g<AdminOverview>('/overview'),
 
+    users: {
+      list: () => g<AdminUser[]>('/users'),
+      get: (uid: string) => g<AdminUser>(`/users/${uid}`),
+      getData: (uid: string) => g<AdminUserData>(`/users/${uid}/data`),
+      delete: (uid: string) => del<void>(`/users/${uid}`),
+    },
     snippets: {
       list: () => g<AdminSnippet[]>('/snippets'),
       delete: (id: string) => del<void>(`/snippets/${id}`),
@@ -44,7 +50,7 @@ export function makeAdminApi(secret: string) {
     },
     goals: {
       list: () => g<AdminGoal[]>('/goals'),
-      delete: (date: string) => del<void>(`/goals/${date}`),
+      delete: (id: string) => del<void>(`/goals/${id}`),
       deleteAll: () => del<void>('/goals'),
     },
     leetcode: {
@@ -57,30 +63,34 @@ export function makeAdminApi(secret: string) {
 
 // ── Types ────────────────────────────────────────────────────────────────────
 export interface AdminOverview {
+  counts: { users: number; snippets: number; notes: number; goals: number; leetcode: number };
+}
+export interface AdminUser {
+  id: string; name: string; profession: string; age: string; gender: string;
+  email: string | null; photoUrl: string | null; createdAt: string; updatedAt: string;
+}
+export interface AdminUserData {
   counts: { snippets: number; notes: number; goals: number; leetcode: number };
   streak: { currentStreak: number; longestStreak: number; totalCompletedDays: number };
-  leetcodeStats: {
-    totalProblems: number; totalSolved: number;
-    easy: { solved: number; attempted: number };
-    medium: { solved: number; attempted: number };
-    hard: { solved: number; attempted: number };
-    topTopics: { topic: string; count: number }[];
-  };
+  snippets: AdminSnippet[];
+  notes: AdminNote[];
+  goals: AdminGoal[];
+  leetcode: AdminLeetcode[];
 }
 export interface AdminSnippet {
-  id: string; title: string; language: string; tags: string[];
+  id: string; userId: string; title: string; language: string; tags: string[];
   description: string | null; createdAt: string; updatedAt: string; code: string;
 }
 export interface AdminNote {
-  id: string; title: string; content: string; tags: string[];
+  id: string; userId: string; title: string; content: string; tags: string[];
   pinned: boolean; createdAt: string; updatedAt: string;
 }
 export interface AdminGoal {
-  id: string; date: string; targetMinutes: number; minutesLogged: number;
+  id: string; userId: string; date: string; targetMinutes: number; minutesLogged: number;
   focus: string | null; completed: boolean; createdAt: string;
 }
 export interface AdminLeetcode {
-  id: string; title: string; url: string | null; difficulty: string;
+  id: string; userId: string; title: string; url: string | null; difficulty: string;
   status: string; topics: string[]; notes: string | null;
   solvedAt: string | null; createdAt: string; updatedAt: string;
 }

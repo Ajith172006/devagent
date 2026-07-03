@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { Code2, Trophy, Flame, StickyNote } from 'lucide-react';
+import { Code2, Trophy, Flame, StickyNote, Copy, Check } from 'lucide-react';
 import { snippetsApi, leetcodeApi, goalsApi, notesApi } from '../api/modules';
 import { GutterCard } from '../components/GutterCard';
 import { Loader } from '../components/ui';
@@ -11,6 +11,26 @@ function getGreeting() {
   if (h < 12) return 'Good morning';
   if (h < 17) return 'Good afternoon';
   return 'Good evening';
+}
+
+function CopyId({ id }: { id: string }) {
+  const [copied, setCopied] = useState(false);
+  const copy = () => {
+    navigator.clipboard.writeText(id).then(() => {
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+    });
+  };
+  return (
+    <button
+      onClick={copy}
+      title="Copy your User ID"
+      className="flex items-center gap-1.5 rounded-md border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] px-2 py-1 font-mono text-[10px] text-[var(--color-text-faint)] hover:border-[var(--color-amber)] hover:text-[var(--color-text)] transition-colors"
+    >
+      <span className="max-w-[120px] truncate">{id}</span>
+      {copied ? <Check size={11} className="text-[var(--color-diff-green)]" /> : <Copy size={11} />}
+    </button>
+  );
 }
 
 export function Dashboard() {
@@ -58,7 +78,7 @@ export function Dashboard() {
         {user?.photoURL && (
           <img src={user.photoURL} alt="avatar" className="h-12 w-12 rounded-full ring-2 ring-[var(--color-amber)]" />
         )}
-        <div>
+        <div className="flex-1 min-w-0">
           <p className="text-xs text-[var(--color-text-muted)]">{getGreeting()}</p>
           <h2 className="font-display text-xl font-semibold">Welcome, {displayName} 👋</h2>
           {profile && (
@@ -67,6 +87,12 @@ export function Dashboard() {
             </p>
           )}
         </div>
+        {user?.uid && (
+          <div className="flex flex-col items-end gap-1 shrink-0">
+            <p className="text-[10px] text-[var(--color-text-faint)]">Your User ID</p>
+            <CopyId id={user.uid} />
+          </div>
+        )}
       </div>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stat('Snippets saved', snippetCount, <Code2 size={20} />, 'amber')}

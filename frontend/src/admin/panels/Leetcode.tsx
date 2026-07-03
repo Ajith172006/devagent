@@ -41,6 +41,7 @@ export function Leetcode() {
     title: r.url
       ? <a href={r.url} target="_blank" rel="noopener" style={{ color: '#60a5fa', textDecoration: 'none' }}>{r.title}</a>
       : r.title,
+    user: <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#565c72' }}>{r.userId.slice(0, 12)}…</span>,
     difficulty: <Badge text={r.difficulty} color={DIFF_COLORS[r.difficulty] || '#8b90a3'} />,
     status: <Badge text={r.status} color={STATUS_COLORS[r.status] || '#8b90a3'} />,
     topics: r.topics.length
@@ -73,6 +74,7 @@ export function Leetcode() {
         <Table
           columns={[
             { key: 'title', label: 'Title' },
+            { key: 'user', label: 'User ID', width: 120 },
             { key: 'difficulty', label: 'Difficulty', width: 100 },
             { key: 'status', label: 'Status', width: 100 },
             { key: 'topics', label: 'Topics' },

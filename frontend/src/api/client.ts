@@ -8,42 +8,41 @@ export class ApiError extends Error {
   }
 }
 
+// The current user's Firebase UID — set by AuthContext after sign-in
+let currentUserId: string | null = null;
+export function setCurrentUserId(uid: string | null) { currentUserId = uid; }
+
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const res = await fetch(`${BASE}${path}`, {
-    ...init,
-    headers: {
-      'Content-Type': 'application/json',
-      ...(init?.headers || {}),
-    },
-  });
+  const headers: Record<string, string> = {
+    'Content-Type': 'application/json',
+    ...(init?.headers as Record<string, string> || {}),
+  };
+  if (currentUserId) headers['x-user-id'] = currentUserId;
+
+  const res = await fetch(`${BASE}${path}`, { ...init, headers });
 
   if (!res.ok) {
     let message = res.statusText;
     try {
       const body = await res.json();
       message = body.message || message;
-    } catch {
-      // ignore — no JSON body
-    }
+    } catch { /* no JSON body */ }
     throw new ApiError(res.status, Array.isArray(message) ? message.join(', ') : message);
   }
 
   if (res.status === 204) return undefined as T;
-
-  const contentType = res.headers.get('content-type') || '';
-  if (contentType.includes('application/json')) {
-    return res.json() as Promise<T>;
-  }
+  const ct = res.headers.get('content-type') || '';
+  if (ct.includes('application/json')) return res.json() as Promise<T>;
   return res.text() as unknown as T;
 }
 
-const get = <T>(path: string) => request<T>(path);
+const get  = <T>(path: string) => request<T>(path);
 const post = <T>(path: string, body?: unknown) =>
   request<T>(path, { method: 'POST', body: body ? JSON.stringify(body) : undefined });
 const patch = <T>(path: string, body?: unknown) =>
   request<T>(path, { method: 'PATCH', body: body ? JSON.stringify(body) : undefined });
-const put = <T>(path: string, body?: unknown) =>
+const put  = <T>(path: string, body?: unknown) =>
   request<T>(path, { method: 'PUT', body: body ? JSON.stringify(body) : undefined });
-const del = <T>(path: string) => request<T>(path, { method: 'DELETE' });
+const del  = <T>(path: string) => request<T>(path, { method: 'DELETE' });
 
 export const api = { get, post, patch, put, del };

@@ -11,6 +11,13 @@ import type {
   AiResult,
 } from '../types';
 
+// ---- User profile sync ----
+export const usersApi = {
+  upsert: (data: { name: string; profession: string; age: string; gender: string; email?: string; photoUrl?: string }) =>
+    api.put<{ id: string }>('/users/me', data),
+  me: () => api.get<{ id: string; name: string; profession: string; age: string; gender: string; createdAt: string }>('/users/me'),
+};
+
 // ---- Snippets ----
 export const snippetsApi = {
   list: (params: { language?: string; tag?: string; search?: string } = {}) => {

@@ -31,7 +31,9 @@ export function Goals() {
   };
 
   const tableRows = rows.map(r => ({
+    _id: r.id,
     _date: r.date,
+    user: <span style={{ fontFamily: 'monospace', fontSize: 11, color: '#565c72' }}>{r.userId.slice(0, 12)}…</span>,
     date: <span style={{ fontFamily: 'monospace' }}>{r.date}</span>,
     progress: `${r.minutesLogged} / ${r.targetMinutes} min`,
     pct: (
@@ -57,6 +59,7 @@ export function Goals() {
       {loading ? <Spinner /> : (
         <Table
           columns={[
+            { key: 'user', label: 'User ID', width: 120 },
             { key: 'date', label: 'Date', width: 110 },
             { key: 'progress', label: 'Progress', width: 140 },
             { key: 'pct', label: '', width: 100 },
@@ -64,7 +67,7 @@ export function Goals() {
             { key: 'focus', label: 'Focus' },
           ]}
           rows={tableRows}
-          onDelete={row => ask(`Delete goal for ${row._date}?`, () => api.goals.delete(row._date as string))}
+          onDelete={row => ask(`Delete goal for ${row._date}?`, () => api.goals.delete(row._id as string))}
         />
       )}
     </div>
