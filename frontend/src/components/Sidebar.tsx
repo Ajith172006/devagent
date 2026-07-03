@@ -9,7 +9,9 @@ import {
   Target,
   Globe,
   StickyNote,
+  LogOut,
 } from 'lucide-react';
+import { useAuth } from '../context/AuthContext';
 
 const links = [
   { to: '/', label: 'Dashboard', icon: LayoutDashboard, end: true },
@@ -24,6 +26,8 @@ const links = [
 ];
 
 export function Sidebar() {
+  const { user, profile, logout } = useAuth();
+
   return (
     <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-[var(--color-ink-border)] bg-[var(--color-ink-panel)]">
       <div className="flex items-center gap-2 px-5 py-5">
@@ -57,7 +61,30 @@ export function Sidebar() {
         ))}
       </nav>
 
-      <div className="px-5 py-4 hash-tag">devagent · local workspace</div>
+      {/* User footer */}
+      <div className="border-t border-[var(--color-ink-border)] px-4 py-3">
+        <div className="flex items-center gap-2.5 mb-2">
+          {user?.photoURL
+            ? <img src={user.photoURL} alt="avatar" className="h-6 w-6 rounded-full" />
+            : <div className="h-6 w-6 rounded-full bg-[var(--color-ink-panel-raised)]" />
+          }
+          <div className="min-w-0">
+            <p className="truncate text-xs font-medium text-[var(--color-text)]">
+              {profile?.name || user?.displayName || 'User'}
+            </p>
+            <p className="truncate text-[10px] text-[var(--color-text-faint)]">
+              {profile?.profession || user?.email || ''}
+            </p>
+          </div>
+        </div>
+        <button
+          onClick={logout}
+          className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-[var(--color-text-faint)] hover:bg-[var(--color-ink-panel-raised)] hover:text-[var(--color-diff-red)] transition-colors"
+        >
+          <LogOut size={13} />
+          Sign out
+        </button>
+      </div>
     </aside>
   );
 }

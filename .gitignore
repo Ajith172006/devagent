@@ -9,6 +9,8 @@ build/
 .env
 .env.local
 .env.*.local
+frontend/.env
+frontend/.env.local
 
 # SQLite database file
 *.sqlite

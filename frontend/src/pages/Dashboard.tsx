@@ -3,9 +3,20 @@ import { Code2, Trophy, Flame, StickyNote } from 'lucide-react';
 import { snippetsApi, leetcodeApi, goalsApi, notesApi } from '../api/modules';
 import { GutterCard } from '../components/GutterCard';
 import { Loader } from '../components/ui';
+import { useAuth } from '../context/AuthContext';
 import type { LeetcodeStats, Streak } from '../types';
 
+function getGreeting() {
+  const h = new Date().getHours();
+  if (h < 12) return 'Good morning';
+  if (h < 17) return 'Good afternoon';
+  return 'Good evening';
+}
+
 export function Dashboard() {
+  const { profile, user } = useAuth();
+  const displayName = profile?.name || user?.displayName || 'Developer';
+
   const [loading, setLoading] = useState(true);
   const [snippetCount, setSnippetCount] = useState(0);
   const [noteCount, setNoteCount] = useState(0);
@@ -42,6 +53,21 @@ export function Dashboard() {
 
   return (
     <div className="space-y-6">
+      {/* Greeting */}
+      <div className="rounded-xl border border-[var(--color-ink-border)] bg-[var(--color-ink-panel)] px-6 py-5 flex items-center gap-4">
+        {user?.photoURL && (
+          <img src={user.photoURL} alt="avatar" className="h-12 w-12 rounded-full ring-2 ring-[var(--color-amber)]" />
+        )}
+        <div>
+          <p className="text-xs text-[var(--color-text-muted)]">{getGreeting()}</p>
+          <h2 className="font-display text-xl font-semibold">Welcome, {displayName} 👋</h2>
+          {profile && (
+            <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
+              {profile.profession} · {profile.age} yrs
+            </p>
+          )}
+        </div>
+      </div>
       <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
         {stat('Snippets saved', snippetCount, <Code2 size={20} />, 'amber')}
         {stat('LeetCode solved', leetcode?.totalSolved ?? 0, <Trophy size={20} />, 'green')}
@@ -67,7 +93,7 @@ export function Dashboard() {
       )}
 
       <p className="hash-tag">
-        Welcome back — pick a workspace tool from the sidebar to keep going.
+        Pick a workspace tool from the sidebar to keep going.
       </p>
     </div>
   );
