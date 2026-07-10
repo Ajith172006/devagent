@@ -43,6 +43,16 @@
     font-family: var(--font-mono);
   }
 
+  input::placeholder,
+  textarea::placeholder {
+    background: linear-gradient(90deg, #3b82f6, #ef4444, #ffffff) !important;
+    -webkit-background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    background-clip: text !important;
+    color: transparent !important;
+    opacity: 0.65 !important;
+  }
+
   ::selection {
     background: var(--color-amber);
     color: var(--color-ink);
