@@ -26,7 +26,6 @@ import { User } from './users/user.entity';
       url: process.env.MONGODB_URI,
       entities: [Snippet, Note, Goal, LeetcodeEntry, User],
       synchronize: true,
-      useUnifiedTopology: true,
     }),
     UsersModule,
     SnippetsModule,
