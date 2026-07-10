@@ -460,10 +460,10 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 
 function inputCls(hasError: boolean) {
   return [
-    'w-full rounded-lg border bg-[var(--color-ink-panel-raised)] px-3 py-2 text-sm text-[var(--color-text)]',
-    'placeholder:text-[var(--color-text-faint)] focus:outline-none focus:ring-2',
+    'w-full rounded-lg border bg-black/45 px-4 py-2.5 text-base text-[var(--color-text)]',
+    'placeholder:text-white/40 focus:outline-none focus:ring-1',
     hasError
       ? 'border-[var(--color-diff-red)] focus:ring-[var(--color-diff-red)]'
-      : 'border-[var(--color-ink-border)] focus:ring-[var(--color-amber)]',
+      : 'border-white/20 focus:border-[#3b82f6] focus:ring-[#3b82f6]',
   ].join(' ');
 }

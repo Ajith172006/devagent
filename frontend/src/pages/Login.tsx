@@ -55,10 +55,10 @@ export function Login() {
           <button
             onClick={handleGoogle}
             disabled={loading}
-            className="flex w-full items-center justify-center gap-3 rounded-lg border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] px-4 py-3 text-sm font-medium text-[var(--color-text)] transition-colors hover:border-[var(--color-amber)] hover:bg-[var(--color-ink-panel-raised)] disabled:cursor-not-allowed disabled:opacity-50"
+            className="flex w-full items-center justify-center gap-3.5 rounded-lg border border-white/30 bg-white/5 px-4.5 py-3.5 text-base font-bold text-white transition-all hover:bg-white/10 hover:border-white/50 active:scale-[0.98] disabled:cursor-not-allowed disabled:opacity-50 duration-150"
           >
             {loading ? (
-              <span className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--color-text-faint)] border-t-[var(--color-amber)]" />
+              <span className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--color-text-faint)] border-t-white" />
             ) : (
               /* Google "G" icon */
               <svg width="20" height="20" viewBox="0 0 24 24" aria-hidden="true">
