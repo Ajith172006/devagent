@@ -15,8 +15,6 @@ import { Profile } from './pages/Profile';
 import { Admin } from './pages/Admin';
 import { useAuth } from './context/AuthContext';
 
-const titled = (title: string, node: React.ReactNode) => <Layout title={title}>{node}</Layout>;
-
 const Spinner = () => (
   <div className="flex h-screen items-center justify-center bg-[var(--color-ink)]">
     <span className="h-8 w-8 animate-spin rounded-full border-2 border-[var(--color-ink-border)] border-t-[var(--color-amber)]" />
@@ -96,19 +94,21 @@ export default function App() {
       <Route path="/*" element={
         !user ? <Navigate to="/login" replace /> :
         !profile ? <Navigate to="/setup" replace /> :
-        <Routes>
-          <Route path="/" element={titled('Dashboard', <Dashboard />)} />
-          <Route path="/snippets" element={titled('Code Snippets', <Snippets />)} />
-          <Route path="/debug" element={titled('AI Debugging', <AiDebug />)} />
-          <Route path="/explain" element={titled('Explain Code', <ExplainCode />)} />
-          <Route path="/github" element={titled('GitHub', <Github />)} />
-          <Route path="/leetcode" element={titled('LeetCode Tracker', <Leetcode />)} />
-          <Route path="/goals" element={titled('Daily Coding Goals', <Goals />)} />
-          <Route path="/portfolio" element={titled('Portfolio Generator', <Portfolio />)} />
-          <Route path="/notes" element={titled('Notes', <Notes />)} />
-          <Route path="/profile" element={titled('Profile', <Profile />)} />
-          <Route path="*" element={<Navigate to="/" replace />} />
-        </Routes>
+        <Layout>
+          <Routes>
+            <Route path="/" element={<Dashboard />} />
+            <Route path="/snippets" element={<Snippets />} />
+            <Route path="/debug" element={<AiDebug />} />
+            <Route path="/explain" element={<ExplainCode />} />
+            <Route path="/github" element={<Github />} />
+            <Route path="/leetcode" element={<Leetcode />} />
+            <Route path="/goals" element={<Goals />} />
+            <Route path="/portfolio" element={<Portfolio />} />
+            <Route path="/notes" element={<Notes />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="*" element={<Navigate to="/" replace />} />
+          </Routes>
+        </Layout>
       } />
     </Routes>
   );

@@ -3,9 +3,38 @@ import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
 
-export function Layout({ title, children }: { title: string; children: ReactNode }) {
+export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const getRouteTitle = (path: string) => {
+    switch (path) {
+      case '/':
+        return 'Dashboard';
+      case '/snippets':
+        return 'Code Snippets';
+      case '/debug':
+        return 'AI Debugging';
+      case '/explain':
+        return 'Explain Code';
+      case '/github':
+        return 'GitHub';
+      case '/leetcode':
+        return 'LeetCode Tracker';
+      case '/goals':
+        return 'Daily Coding Goals';
+      case '/portfolio':
+        return 'Portfolio Generator';
+      case '/notes':
+        return 'Notes';
+      case '/profile':
+        return 'Profile';
+      default:
+        return 'DevAgent';
+    }
+  };
+
+  const title = getRouteTitle(location.pathname);
 
   const getBgImage = (path: string) => {
     switch (path) {
