@@ -104,12 +104,27 @@ export class PortfolioService {
     const themeIndex = getThemeIndex(userId, 4);
     const colors = getThemeColors(themeIndex);
 
-    // Build items HTML
-    const skillPillsHtml = skills
-      .map((s) => `
-      <div class="skill-pill reveal">
-        <span class="skill-icon">${getSkillEmoji(s)}</span>
-        <span class="skill-name">${escapeHtml(s)}</span>
+    // Group skills into a triangular row structure
+    const tempSkills = [...skills];
+    const skillRows: string[][] = [];
+    let currentRowSize = 1;
+    while (tempSkills.length > 0) {
+      if (tempSkills.length <= currentRowSize) {
+        skillRows.push(tempSkills);
+        break;
+      }
+      skillRows.push(tempSkills.splice(0, currentRowSize));
+      currentRowSize++;
+    }
+
+    const skillPillsHtml = skillRows
+      .map((row) => `
+      <div class="skills-row">
+        ${row.map((s) => `
+        <div class="skill-pill reveal">
+          <span class="skill-icon">${getSkillEmoji(s)}</span>
+          <span class="skill-name">${escapeHtml(s)}</span>
+        </div>`).join('')}
       </div>`)
       .join('');
 
@@ -586,12 +601,18 @@ export class PortfolioService {
   #skills { background: transparent; }
   .skills-grid {
     display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
+    flex-direction: column;
+    align-items: center;
     gap: 1.2rem;
     max-width: 800px;
     margin: 0 auto;
     padding: 2rem 0;
+  }
+  .skills-row {
+    display: flex;
+    justify-content: center;
+    gap: 1.2rem;
+    width: 100%;
   }
   .skill-pill {
     display: flex;
@@ -1020,6 +1041,7 @@ export class PortfolioService {
 
   @media (max-width: 540px) {
     .skills-grid { gap: 0.8rem; }
+    .skills-row { gap: 0.8rem; }
     .skill-pill { width: 85px; height: 85px; border-radius: 12px; }
     .skill-icon { font-size: 1.4rem; }
     .skill-name { font-size: 0.65rem; }
@@ -1027,6 +1049,7 @@ export class PortfolioService {
 
   @media (max-width: 420px) {
     .skills-grid { gap: 0.6rem; }
+    .skills-row { gap: 0.6rem; }
     .skill-pill { width: 75px; height: 75px; }
     .skill-icon { font-size: 1.2rem; }
     .skill-name { font-size: 0.6rem; }
