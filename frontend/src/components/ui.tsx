@@ -37,7 +37,7 @@ export function Button({
   const base = 'inline-flex items-center gap-2 rounded-lg px-3.5 py-2 text-sm font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed';
   const styles =
     variant === 'primary'
-      ? 'bg-[var(--color-amber)] text-[var(--color-ink)] hover:brightness-110'
+      ? 'btn-dynamic-gradient text-[var(--color-ink)]'
       : 'border border-[var(--color-ink-border)] text-[var(--color-text-muted)] hover:text-[var(--color-text)] hover:border-[var(--color-text-faint)]';
   return (
     <button className={`${base} ${styles} ${className}`} {...props}>

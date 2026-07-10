@@ -27,7 +27,7 @@ export function Login() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-animate-flow pointer-events-none"
         style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.72), rgba(14, 16, 23, 0.85)), url('/bg-code-stream.jpg')`,
+          backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.55), rgba(14, 16, 23, 0.75)), url('/bg-workspace-neon.jpg')`,
           backgroundSize: '120% 120%'
         }}
       />
@@ -35,13 +35,13 @@ export function Login() {
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <svg width="48" height="48" viewBox="0 0 32 32" aria-hidden="true">
-            <rect width="32" height="32" rx="8" fill="var(--color-ink-panel-raised)" />
-            <rect x="4" y="6" width="3" height="20" rx="1.5" fill="var(--color-amber)" />
-            <rect x="12" y="10" width="16" height="3" rx="1.5" fill="var(--color-text)" />
-            <rect x="12" y="16" width="11" height="3" rx="1.5" fill="var(--color-diff-green)" />
-            <rect x="12" y="22" width="7" height="3" rx="1.5" fill="var(--color-text-faint)" />
+            <rect width="32" height="32" rx="8" fill="rgba(59,130,246,0.15)" stroke="rgba(255,255,255,0.1)" />
+            <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#3b82f6" />
+            <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#ffffff" />
+            <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#ef4444" />
+            <rect x="12" y="22" width="7" height="3" rx="1.5" fill="var(--color-text-muted)" />
           </svg>
-          <h1 className="font-display text-2xl font-semibold tracking-tight">DevAgent</h1>
+          <h1 className="font-display text-2xl font-bold tracking-tight bg-gradient-to-r from-blue-400 via-white to-red-400 bg-clip-text text-transparent">DevAgent</h1>
           <p className="text-sm text-[var(--color-text-muted)]">Your AI-powered developer workspace</p>
         </div>
 

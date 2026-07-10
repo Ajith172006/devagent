@@ -36,11 +36,11 @@ export default function App() {
         <Route path="/*" element={
           <div className="flex h-screen flex-col items-center justify-center gap-4 bg-[var(--color-ink)] px-6 text-center">
             <svg width="48" height="48" viewBox="0 0 32 32">
-              <rect width="32" height="32" rx="8" fill="var(--color-ink-panel-raised)" />
-              <rect x="4" y="6" width="3" height="20" rx="1.5" fill="var(--color-amber)" />
-              <rect x="12" y="10" width="16" height="3" rx="1.5" fill="var(--color-text)" />
-              <rect x="12" y="16" width="11" height="3" rx="1.5" fill="var(--color-diff-green)" />
-              <rect x="12" y="22" width="7" height="3" rx="1.5" fill="var(--color-text-faint)" />
+              <rect width="32" height="32" rx="8" fill="rgba(59,130,246,0.15)" stroke="rgba(255,255,255,0.1)" />
+              <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#3b82f6" />
+              <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#ffffff" />
+              <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#ef4444" />
+              <rect x="12" y="22" width="7" height="3" rx="1.5" fill="var(--color-text-muted)" />
             </svg>
             <h1 className="font-display text-xl font-semibold">Firebase not configured</h1>
             <p className="max-w-md text-sm text-[var(--color-text-muted)]">

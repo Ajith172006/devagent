@@ -32,22 +32,22 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
   const getBgImage = (path: string) => {
     switch (path) {
       case '/':
-        return '/bg-constellation.jpg';
+        return '/bg-developers-server.jpg';
       case '/explain':
-        return '/bg-stylus-code.jpg';
+        return '/bg-hologram-code.jpg';
       case '/debug':
       case '/snippets':
-        return '/bg-laptop.jpg';
+        return '/bg-editor-code.jpg';
       case '/github':
       case '/portfolio':
-        return '/bg-network.jpg';
+        return '/bg-cloud-network.jpg';
       case '/leetcode':
       case '/goals':
       case '/notes':
       case '/profile':
         return '/bg-waves.jpg';
       default:
-        return '/bg-constellation.jpg';
+        return '/bg-developers-server.jpg';
     }
   };
 
@@ -72,7 +72,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
         <div 
           className="absolute inset-0 bg-cover bg-center bg-animate-flow pointer-events-none transition-all duration-700 ease-in-out"
           style={{
-            backgroundImage: `linear-gradient(to bottom, rgba(23, 26, 36, 0.88), rgba(14, 16, 23, 0.94)), url('${bgImage}')`,
+            backgroundImage: `linear-gradient(to bottom, rgba(23, 26, 36, 0.78), rgba(14, 16, 23, 0.88)), url('${bgImage}')`,
             backgroundSize: '120% 120%',
             opacity: 0.95
           }}

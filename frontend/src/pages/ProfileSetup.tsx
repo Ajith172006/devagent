@@ -45,7 +45,7 @@ export function ProfileSetup() {
       <div 
         className="absolute inset-0 bg-cover bg-center bg-animate-flow pointer-events-none"
         style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.72), rgba(14, 16, 23, 0.85)), url('/bg-code-stream.jpg')`,
+          backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.55), rgba(14, 16, 23, 0.75)), url('/bg-workspace-neon.jpg')`,
           backgroundSize: '120% 120%'
         }}
       />
@@ -124,7 +124,7 @@ export function ProfileSetup() {
 
           <button
             type="submit"
-            className="mt-2 w-full rounded-lg bg-[var(--color-amber)] px-4 py-2.5 text-sm font-semibold text-[var(--color-ink)] transition-opacity hover:opacity-90"
+            className="mt-2 w-full rounded-lg btn-dynamic-gradient px-4 py-2.5 text-sm font-semibold"
           >
             Enter workspace →
           </button>

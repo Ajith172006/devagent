@@ -10,22 +10,22 @@ export function Layout({ title, children }: { title: string; children: ReactNode
   const getBgImage = (path: string) => {
     switch (path) {
       case '/':
-        return '/bg-constellation.jpg';
+        return '/bg-developers-server.jpg';
       case '/explain':
-        return '/bg-stylus-code.jpg';
+        return '/bg-hologram-code.jpg';
       case '/debug':
       case '/snippets':
-        return '/bg-laptop.jpg';
+        return '/bg-editor-code.jpg';
       case '/github':
       case '/portfolio':
-        return '/bg-network.jpg';
+        return '/bg-cloud-network.jpg';
       case '/leetcode':
       case '/goals':
       case '/notes':
       case '/profile':
         return '/bg-waves.jpg';
       default:
-        return '/bg-constellation.jpg';
+        return '/bg-developers-server.jpg';
     }
   };
 
@@ -37,7 +37,7 @@ export function Layout({ title, children }: { title: string; children: ReactNode
       <div 
         className="absolute inset-0 bg-cover bg-center bg-animate-flow pointer-events-none transition-all duration-700 ease-in-out"
         style={{
-          backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.72), rgba(14, 16, 23, 0.85)), url('${bgImage}')`,
+          backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.58), rgba(14, 16, 23, 0.75)), url('${bgImage}')`,
           backgroundSize: '120% 120%'
         }}
       />

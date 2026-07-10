@@ -358,8 +358,6 @@ export function Profile() {
             {errors.gender && <p className="mt-1 text-xs text-[var(--color-diff-red)]">{errors.gender}</p>}
           </Field>
         </div>
-
-        {/* Resume */}
         <div className="pt-4 border-t border-[var(--color-ink-border)]">
           <Field label="Resume (PDF format only)" error={errors.resumeText}>
             <input
@@ -369,8 +367,8 @@ export function Profile() {
               className="block w-full text-sm text-[var(--color-text-muted)]
                 file:mr-4 file:py-2 file:px-4
                 file:rounded-full file:border-0
-                file:text-sm file:font-semibold
-                file:bg-[var(--color-amber)] file:text-[var(--color-ink)]
+                file:text-sm
+                file:btn-dynamic-gradient
                 hover:file:opacity-90"
             />
             {form.resumeText && form.resumeText.startsWith('data:') && (
@@ -378,12 +376,12 @@ export function Profile() {
             )}
           </Field>
         </div>
-
+ 
         <div className="flex items-center gap-4 pt-4">
           <button
             type="submit"
             disabled={saving}
-            className="rounded-lg bg-[var(--color-amber)] px-6 py-2.5 text-sm font-semibold text-[var(--color-ink)] transition-opacity hover:opacity-90 disabled:opacity-50"
+            className="rounded-lg btn-dynamic-gradient px-6 py-2.5 text-sm font-semibold disabled:opacity-50"
           >
             {saving ? 'Analyzing & Saving...' : 'Save Profile'}
           </button>
