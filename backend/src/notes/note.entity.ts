@@ -1,16 +1,21 @@
+import { ObjectId } from 'mongodb';
+import { v4 as uuid } from 'uuid';
 import {
   Column,
   CreateDateColumn,
   Entity,
   Index,
-  PrimaryGeneratedColumn,
+  ObjectIdColumn,
   UpdateDateColumn,
 } from 'typeorm';
 
 @Entity('notes')
 export class Note {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @ObjectIdColumn()
+  _id: ObjectId;
+
+  @Column()
+  id: string = uuid();
 
   @Index()
   @Column({ default: '' })

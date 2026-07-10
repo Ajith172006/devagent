@@ -1,9 +1,13 @@
-import { Column, CreateDateColumn, Entity, PrimaryColumn, UpdateDateColumn } from 'typeorm';
+import { ObjectId } from 'mongodb';
+import { Column, CreateDateColumn, Entity, ObjectIdColumn, UpdateDateColumn } from 'typeorm';
 
 @Entity('users')
 export class User {
+  @ObjectIdColumn()
+  _id: ObjectId;
+
   /** Firebase UID — used as the primary key */
-  @PrimaryColumn()
+  @Column()
   id: string;
 
   @Column()

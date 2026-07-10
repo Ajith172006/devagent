@@ -22,11 +22,11 @@ import { User } from './users/user.entity';
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
     TypeOrmModule.forRoot({
-      type: 'sqljs',
-      autoSave: true,
-      location: process.env.DATABASE_PATH || 'devagent.sqlite',
+      type: 'mongodb',
+      url: process.env.MONGODB_URI,
       entities: [Snippet, Note, Goal, LeetcodeEntry, User],
       synchronize: true,
+      useUnifiedTopology: true,
     }),
     UsersModule,
     SnippetsModule,
