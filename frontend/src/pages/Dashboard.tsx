@@ -94,7 +94,7 @@ export function Dashboard() {
           </div>
         )}
       </div>
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 lg:grid-cols-4">
         {stat('Snippets saved', snippetCount, <Code2 size={20} />, 'amber')}
         {stat('LeetCode solved', leetcode?.totalSolved ?? 0, <Trophy size={20} />, 'green')}
         {stat('Current streak', `${streak?.currentStreak ?? 0}d`, <Flame size={20} />, 'red')}
@@ -104,7 +104,7 @@ export function Dashboard() {
       {leetcode && (
         <GutterCard gutter="green">
           <h2 className="font-display text-sm font-semibold mb-3">Difficulty breakdown</h2>
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
             {(['easy', 'medium', 'hard'] as const).map((d) => (
               <div key={d}>
                 <p className="text-xs capitalize text-[var(--color-text-muted)]">{d}</p>

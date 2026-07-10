@@ -67,7 +67,7 @@ export function Leetcode() {
   return (
     <div className="max-w-4xl space-y-5">
       {stats && (
-        <div className="grid grid-cols-3 gap-3">
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
           {(['easy', 'medium', 'hard'] as const).map((d) => (
             <GutterCard key={d} gutter={difficultyGutter[(d[0].toUpperCase() + d.slice(1)) as LeetcodeDifficulty]}>
               <p className="text-xs capitalize text-[var(--color-text-muted)]">{d}</p>
@@ -109,7 +109,7 @@ export function Leetcode() {
               value={form.url}
               onChange={(e) => setForm({ ...form, url: e.target.value })}
             />
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Select
                 value={form.difficulty}
                 onChange={(e) => setForm({ ...form, difficulty: e.target.value as LeetcodeDifficulty })}

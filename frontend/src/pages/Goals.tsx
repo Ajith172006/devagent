@@ -80,7 +80,7 @@ export function Goals() {
 
   return (
     <div className="max-w-3xl space-y-5">
-      <div className="grid grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <GutterCard gutter="red" className="flex items-center gap-3">
           <Flame size={24} className="text-[var(--color-diff-red)]" />
           <div>

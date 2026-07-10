@@ -1,4 +1,5 @@
-import { Controller, Get, Header, Headers, Query, UnauthorizedException } from '@nestjs/common';
+import { Controller, Get, Header, Headers, Query, UnauthorizedException, Res } from '@nestjs/common';
+import { Response } from 'express';
 import { PortfolioService } from './portfolio.service';
 
 @Controller('portfolio')
@@ -21,10 +22,22 @@ export class PortfolioController {
   @Get('export')
   @Header('Content-Type', 'text/html')
   export(
-    @Headers('x-user-id') uid: string,
+    @Headers('x-user-id') uidHeader: string,
+    @Query('userId') uidQuery: string,
     @Query('githubUsername') githubUsername?: string,
     @Query('displayName') displayName?: string,
+    @Query('includeLeetcode') includeLeetcode?: string,
+    @Query('download') download?: string,
+    @Res({ passthrough: true }) res?: Response,
   ) {
-    return this.portfolioService.generateHtml(this.uid(uid), { githubUsername, displayName });
+    const uid = uidHeader || uidQuery;
+    if (download === 'true' && res) {
+      res.setHeader('Content-Disposition', 'attachment; filename="portfolio.html"');
+    }
+    return this.portfolioService.generateHtml(this.uid(uid), {
+      githubUsername,
+      displayName,
+      includeLeetcode: includeLeetcode === 'true',
+    });
   }
 }

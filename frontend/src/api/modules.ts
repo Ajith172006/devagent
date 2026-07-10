@@ -13,9 +13,9 @@ import type {
 
 // ---- User profile sync ----
 export const usersApi = {
-  upsert: (data: { name: string; profession: string; age: string; gender: string; email?: string; photoUrl?: string }) =>
+  upsert: (data: { name: string; profession: string; age: string; gender: string; email?: string; photoUrl?: string; resumeText?: string; forceAnalyze?: boolean }) =>
     api.put<{ id: string }>('/users/me', data),
-  me: () => api.get<{ id: string; name: string; profession: string; age: string; gender: string; createdAt: string }>('/users/me'),
+  me: () => api.get<{ id: string; name: string; profession: string; age: string; gender: string; createdAt: string; email?: string; photoUrl?: string; resumeText?: string; resumeAnalysis?: string }>('/users/me'),
 };
 
 // ---- Snippets ----
@@ -88,10 +88,13 @@ export const aiApi = {
 export const portfolioApi = {
   generate: (githubUsername?: string) =>
     api.get<PortfolioData>(`/portfolio${githubUsername ? `?githubUsername=${encodeURIComponent(githubUsername)}` : ''}`),
-  exportUrl: (githubUsername?: string, displayName?: string) => {
+  exportUrl: (userId?: string, githubUsername?: string, displayName?: string, includeLeetcode?: boolean) => {
     const qs = new URLSearchParams();
+    if (userId) qs.set('userId', userId);
     if (githubUsername) qs.set('githubUsername', githubUsername);
     if (displayName) qs.set('displayName', displayName);
+    if (includeLeetcode) qs.set('includeLeetcode', 'true');
+    qs.set('download', 'true');
     const q = qs.toString();
     return `/api/portfolio/export${q ? `?${q}` : ''}`;
   },

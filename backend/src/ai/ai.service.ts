@@ -10,7 +10,7 @@ export class AiService {
   private readonly model: string;
 
   constructor(private readonly config: ConfigService) {
-    this.model = this.config.get<string>('GEMINI_MODEL') || 'gemini-1.5-flash';
+    this.model = this.config.get<string>('GEMINI_MODEL') || 'gemini-2.5-flash';
   }
 
   private getModel(): GenerativeModel {
@@ -68,5 +68,78 @@ export class AiService {
 
     const result = await model.generateContent(prompt);
     return { result: result.response.text() };
+  }
+
+  async analyzeResume(base64DataUrl: string): Promise<string> {
+    const model = this.getModel();
+
+    const matches = base64DataUrl.match(/^data:(.+);base64,(.+)$/);
+    if (!matches) {
+      throw new Error('Invalid data URL format. Expected base64 encoded document.');
+    }
+    const mimeType = matches[1];
+    const base64Data = matches[2];
+
+    const prompt = `
+Analyze the attached resume and extract the key details into a structured JSON format.
+Ensure the output is valid JSON (and only JSON, no markdown formatting blocks, no backticks).
+Structure:
+{
+  "name": "Full Name",
+  "profession": "Job Title (e.g. Full Stack Developer)",
+  "contact": {
+    "email": "Email address",
+    "phone": "Phone number",
+    "location": "Location (e.g. Salem, Tamil Nadu)",
+    "github": "GitHub profile link",
+    "linkedin": "LinkedIn profile link",
+    "portfolio": "Portfolio link"
+  },
+  "summary": "Concise professional summary...",
+  "skills": ["Skill 1", "Skill 2", ...],
+  "experience": [
+    {
+      "role": "Job Title",
+      "company": "Company Name",
+      "duration": "Duration (e.g. 2024)",
+      "description": "Short description of responsibilities and achievements"
+    }
+  ],
+  "projects": [
+    {
+      "title": "Project Title",
+      "description": "Short description of what the project does",
+      "tech": ["Next.js", "React", ...]
+    }
+  ],
+  "education": [
+    {
+      "degree": "Degree (e.g., B.Tech. in Information Technology)",
+      "school": "University Name",
+      "duration": "Duration (e.g., 2023 - 2027)",
+      "score": "Score (e.g. CGPA: 8.1 or 73%)"
+    }
+  ],
+  "certifications": [
+    {
+      "name": "Certification Name",
+      "authority": "Issuing Authority (e.g. NVIDIA)",
+      "date": "Date"
+    }
+  ]
+}
+`;
+
+    const docPart = {
+      inlineData: {
+        data: base64Data,
+        mimeType: mimeType,
+      },
+    };
+
+    const result = await model.generateContent([prompt, docPart]);
+    const text = result.response.text();
+    const cleanText = text.replace(/^```json\s*/, '').replace(/```\s*$/, '').trim();
+    return cleanText;
   }
 }

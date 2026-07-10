@@ -25,11 +25,24 @@ const links = [
   { to: '/notes', label: 'Notes', icon: StickyNote },
 ];
 
-export function Sidebar() {
+export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const { user, profile, logout } = useAuth();
 
   return (
-    <aside className="hidden md:flex w-56 shrink-0 flex-col border-r border-[var(--color-ink-border)] bg-[var(--color-ink-panel)]">
+    <>
+      {/* Mobile overlay */}
+      {isOpen && (
+        <div
+          className="fixed inset-0 z-40 bg-[var(--color-ink)]/50 md:hidden backdrop-blur-sm transition-opacity"
+          onClick={onClose}
+        />
+      )}
+
+      <aside
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col border-r border-[var(--color-ink-border)] bg-[var(--color-ink-panel)] transition-transform duration-300 md:static md:translate-x-0 md:w-56 shrink-0 ${
+          isOpen ? 'translate-x-0' : '-translate-x-full'
+        }`}
+      >
       <div className="flex items-center gap-2 px-5 py-5">
         <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
           <rect width="32" height="32" rx="7" fill="var(--color-ink-panel-raised)" />
@@ -47,15 +60,16 @@ export function Sidebar() {
             key={to}
             to={to}
             end={end}
+            onClick={onClose}
             className={({ isActive }) =>
-              `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-colors ${
+              `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 relative overflow-hidden group border-l-2 ${
                 isActive
-                  ? 'bg-[var(--color-ink-panel-raised)] text-[var(--color-text)]'
-                  : 'text-[var(--color-text-muted)] hover:bg-[var(--color-ink-panel-raised)] hover:text-[var(--color-text)]'
+                  ? 'bg-[var(--color-ink-panel-raised)] text-[var(--color-text)] border-[var(--color-amber)]'
+                  : 'text-[var(--color-text-muted)] border-transparent hover:bg-[rgba(232,179,57,0.04)] hover:text-[var(--color-text)] hover:translate-x-1'
               }`
             }
           >
-            <Icon size={16} strokeWidth={1.75} />
+            <Icon size={16} strokeWidth={1.75} className="transition-transform group-hover:scale-110" />
             {label}
           </NavLink>
         ))}
@@ -85,6 +99,7 @@ export function Sidebar() {
           Sign out
         </button>
       </div>
-    </aside>
+      </aside>
+    </>
   );
 }

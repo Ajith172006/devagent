@@ -11,6 +11,7 @@ import { Portfolio } from './pages/Portfolio';
 import { Notes } from './pages/Notes';
 import { Login } from './pages/Login';
 import { ProfileSetup } from './pages/ProfileSetup';
+import { Profile } from './pages/Profile';
 import { Admin } from './pages/Admin';
 import { useAuth } from './context/AuthContext';
 
@@ -105,6 +106,7 @@ export default function App() {
           <Route path="/goals" element={titled('Daily Coding Goals', <Goals />)} />
           <Route path="/portfolio" element={titled('Portfolio Generator', <Portfolio />)} />
           <Route path="/notes" element={titled('Notes', <Notes />)} />
+          <Route path="/profile" element={titled('Profile', <Profile />)} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       } />

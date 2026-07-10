@@ -37,7 +37,7 @@ export function ExplainCode() {
           value={code}
           onChange={(e) => setCode(e.target.value)}
         />
-        <div className="grid grid-cols-2 gap-3">
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           <Input
             placeholder="Language (optional)"
             value={language}

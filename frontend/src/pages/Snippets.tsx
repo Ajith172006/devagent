@@ -81,7 +81,7 @@ export function Snippets() {
       {showForm && (
         <GutterCard gutter="amber">
           <form onSubmit={handleCreate} className="space-y-3">
-            <div className="grid grid-cols-2 gap-3">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
               <Input
                 required
                 placeholder="Title (e.g. Debounce helper)"

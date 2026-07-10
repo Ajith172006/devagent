@@ -18,11 +18,17 @@ export class User {
   @Column()
   gender: string;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   email: string | null;
 
-  @Column({ nullable: true })
+  @Column({ type: 'text', nullable: true })
   photoUrl: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  resumeText: string | null;
+
+  @Column({ type: 'text', nullable: true })
+  resumeAnalysis: string | null;
 
   @CreateDateColumn()
   createdAt: Date;

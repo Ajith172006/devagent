@@ -11,6 +11,8 @@ export interface UserProfile {
   profession: string;
   age: string;
   gender: string;
+  resumeText?: string;
+  photoUrl?: string;
 }
 
 interface AuthContextValue {
@@ -18,7 +20,7 @@ interface AuthContextValue {
   profile: UserProfile | null;
   loading: boolean;
   firebaseReady: boolean;
-  saveProfile: (p: UserProfile) => Promise<void>;
+  saveProfile: (p: UserProfile, forceAnalyze?: boolean) => Promise<void>;
   logout: () => Promise<void>;
 }
 
@@ -40,7 +42,23 @@ export function AuthProvider({ children }: { children: ReactNode }) {
 
       if (firebaseUser) {
         const stored = localStorage.getItem(PROFILE_KEY);
-        setProfile(stored ? (JSON.parse(stored) as UserProfile) : null);
+        if (stored) {
+          try {
+            setProfile(JSON.parse(stored) as UserProfile);
+          } catch {}
+        }
+        usersApi.me().then((data) => {
+          const dbProfile: UserProfile = {
+            name: data.name || '',
+            profession: data.profession || '',
+            age: data.age || '',
+            gender: data.gender || '',
+            resumeText: data.resumeText,
+            photoUrl: data.photoUrl,
+          };
+          localStorage.setItem(PROFILE_KEY, JSON.stringify(dbProfile));
+          setProfile(dbProfile);
+        }).catch(console.error);
       } else {
         setProfile(null);
       }
@@ -49,21 +67,18 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     return unsub;
   }, []);
 
-  const saveProfile = async (p: UserProfile) => {
+  const saveProfile = async (p: UserProfile, forceAnalyze?: boolean) => {
     if (!user) return;
     // Persist to localStorage immediately so the UI updates
     localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
     setProfile(p);
     // Sync to backend — creates/updates the user row keyed by Firebase UID
-    try {
-      await usersApi.upsert({
-        ...p,
-        email: user.email ?? undefined,
-        photoUrl: user.photoURL ?? undefined,
-      });
-    } catch {
-      // Non-fatal — app works offline, backend sync best-effort
-    }
+    await usersApi.upsert({
+      ...p,
+      email: user.email ?? undefined,
+      photoUrl: p.photoUrl || user.photoURL || undefined,
+      forceAnalyze,
+    });
   };
 
   const logout = async () => {

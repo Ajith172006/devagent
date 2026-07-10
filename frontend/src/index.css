@@ -68,11 +68,20 @@
      markers, colors the card according to what it represents. */
   .gutter-card {
     position: relative;
-    background: var(--color-ink-panel);
+    background: rgba(23, 26, 36, 0.65);
     border: 1px solid var(--color-ink-border);
-    border-radius: 10px;
+    border-radius: 12px;
     padding-left: 1.25rem;
     overflow: hidden;
+    backdrop-filter: blur(16px);
+    -webkit-backdrop-filter: blur(16px);
+    transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .gutter-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--color-text-faint);
+    box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
   }
 
   .gutter-card::before {
@@ -83,6 +92,21 @@
     bottom: 0;
     width: 4px;
     background: var(--gutter-color, var(--color-text-faint));
+  }
+
+  .fade-in-slide {
+    animation: fadeInSlide 0.5s cubic-bezier(0.16, 1, 0.3, 1) both;
+  }
+
+  @keyframes fadeInSlide {
+    from {
+      opacity: 0;
+      transform: translateY(12px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
   }
 
   .hash-tag {
