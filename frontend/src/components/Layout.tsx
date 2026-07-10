@@ -10,32 +10,38 @@ export function Layout({ title, children }: { title: string; children: ReactNode
   const getBgImage = (path: string) => {
     switch (path) {
       case '/':
-      case '/github':
-      case '/portfolio':
-        return '/bg-network.jpg';
+        return '/bg-constellation.jpg';
       case '/explain':
+        return '/bg-stylus-code.jpg';
       case '/debug':
       case '/snippets':
         return '/bg-laptop.jpg';
+      case '/github':
+      case '/portfolio':
+        return '/bg-network.jpg';
       case '/leetcode':
       case '/goals':
       case '/notes':
       case '/profile':
         return '/bg-waves.jpg';
       default:
-        return '/bg-network.jpg';
+        return '/bg-constellation.jpg';
     }
   };
 
   const bgImage = getBgImage(location.pathname);
 
   return (
-    <div 
-      className="flex h-screen bg-cover bg-center text-[var(--color-text)] relative overflow-hidden transition-all duration-500 ease-in-out"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.91), rgba(14, 16, 23, 0.96)), url('${bgImage}')`
-      }}
-    >
+    <div className="flex h-screen text-[var(--color-text)] relative overflow-hidden bg-[var(--color-ink)]">
+      {/* Animated dynamic background container */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-animate-flow pointer-events-none transition-all duration-700 ease-in-out"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.72), rgba(14, 16, 23, 0.85)), url('${bgImage}')`,
+          backgroundSize: '120% 120%'
+        }}
+      />
+      
       {/* Background ambient glowing blobs */}
       <div className="absolute top-[-10%] left-[-10%] w-[350px] h-[350px] rounded-full bg-[rgba(232,179,57,0.06)] blur-[100px] pointer-events-none animate-pulse duration-[8000ms]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-[rgba(79,174,132,0.06)] blur-[110px] pointer-events-none animate-pulse duration-[12000ms]" />

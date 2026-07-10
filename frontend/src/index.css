@@ -127,4 +127,30 @@
   .scrollbar-thin::-webkit-scrollbar-track {
     background: transparent;
   }
+
+  @keyframes bgZoomPan {
+    0% {
+      background-position: 0% 0%;
+      transform: scale(1);
+    }
+    25% {
+      background-position: 100% 0%;
+    }
+    50% {
+      background-position: 100% 100%;
+      transform: scale(1.06);
+    }
+    75% {
+      background-position: 0% 100%;
+    }
+    100% {
+      background-position: 0% 0%;
+      transform: scale(1);
+    }
+  }
+
+  .bg-animate-flow {
+    animation: bgZoomPan 50s ease-in-out infinite;
+  }
 }
+

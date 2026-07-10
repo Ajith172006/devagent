@@ -40,12 +40,15 @@ export function ProfileSetup() {
   };
 
   return (
-    <div 
-      className="flex min-h-screen items-center justify-center bg-cover bg-center px-4 py-10 relative overflow-hidden"
-      style={{
-        backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.85), rgba(14, 16, 23, 0.95)), url('/bg-laptop.jpg')`
-      }}
-    >
+    <div className="flex min-h-screen items-center justify-center px-4 py-10 relative overflow-hidden bg-[var(--color-ink)]">
+      {/* Animated dynamic background container */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-animate-flow pointer-events-none"
+        style={{
+          backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.72), rgba(14, 16, 23, 0.85)), url('/bg-code-stream.jpg')`,
+          backgroundSize: '120% 120%'
+        }}
+      />
       <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center gap-2">
