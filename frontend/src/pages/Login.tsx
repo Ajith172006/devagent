@@ -22,8 +22,13 @@ export function Login() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--color-ink)] px-4">
-      <div className="w-full max-w-sm">
+    <div 
+      className="flex min-h-screen items-center justify-center bg-cover bg-center px-4 relative overflow-hidden"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.85), rgba(14, 16, 23, 0.95)), url('/bg-laptop.jpg')`
+      }}
+    >
+      <div className="w-full max-w-sm relative z-10">
         {/* Logo */}
         <div className="mb-8 flex flex-col items-center gap-3">
           <svg width="48" height="48" viewBox="0 0 32 32" aria-hidden="true">

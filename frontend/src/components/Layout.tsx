@@ -7,8 +7,35 @@ export function Layout({ title, children }: { title: string; children: ReactNode
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
+  const getBgImage = (path: string) => {
+    switch (path) {
+      case '/':
+      case '/github':
+      case '/portfolio':
+        return '/bg-network.jpg';
+      case '/explain':
+      case '/debug':
+      case '/snippets':
+        return '/bg-laptop.jpg';
+      case '/leetcode':
+      case '/goals':
+      case '/notes':
+      case '/profile':
+        return '/bg-waves.jpg';
+      default:
+        return '/bg-network.jpg';
+    }
+  };
+
+  const bgImage = getBgImage(location.pathname);
+
   return (
-    <div className="flex h-screen bg-[var(--color-ink)] text-[var(--color-text)] relative overflow-hidden">
+    <div 
+      className="flex h-screen bg-cover bg-center text-[var(--color-text)] relative overflow-hidden transition-all duration-500 ease-in-out"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.91), rgba(14, 16, 23, 0.96)), url('${bgImage}')`
+      }}
+    >
       {/* Background ambient glowing blobs */}
       <div className="absolute top-[-10%] left-[-10%] w-[350px] h-[350px] rounded-full bg-[rgba(232,179,57,0.06)] blur-[100px] pointer-events-none animate-pulse duration-[8000ms]" />
       <div className="absolute bottom-[-10%] right-[-10%] w-[400px] h-[400px] rounded-full bg-[rgba(79,174,132,0.06)] blur-[110px] pointer-events-none animate-pulse duration-[12000ms]" />

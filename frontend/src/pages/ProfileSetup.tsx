@@ -40,8 +40,13 @@ export function ProfileSetup() {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-[var(--color-ink)] px-4 py-10">
-      <div className="w-full max-w-md">
+    <div 
+      className="flex min-h-screen items-center justify-center bg-cover bg-center px-4 py-10 relative overflow-hidden"
+      style={{
+        backgroundImage: `linear-gradient(to bottom, rgba(14, 16, 23, 0.85), rgba(14, 16, 23, 0.95)), url('/bg-laptop.jpg')`
+      }}
+    >
+      <div className="w-full max-w-md relative z-10">
         {/* Header */}
         <div className="mb-8 flex flex-col items-center gap-2">
           {user?.photoURL && (
