@@ -79,7 +79,10 @@ export class PortfolioService {
     const linkedinLink = resume?.contact?.linkedin || '';
     const portfolioLink = resume?.contact?.portfolio || '';
 
-    const skills = resume?.skills || ['React', 'Next.js', 'Node.js', 'MongoDB', 'JavaScript', 'HTML', 'CSS', 'Git'];
+    let skills = resume?.skills;
+    if (!skills || skills.length === 0) {
+      skills = ['React', 'Next.js', 'Node.js', 'MongoDB', 'JavaScript', 'HTML', 'CSS', 'Git'];
+    }
     const experience = resume?.experience || [];
     const projects = resume?.projects || [];
     const education = resume?.education || [];
