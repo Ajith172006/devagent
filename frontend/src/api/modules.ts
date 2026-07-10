@@ -1,4 +1,4 @@
-import { api } from './client';
+import { api, BASE } from './client';
 import type {
   Snippet,
   Note,
@@ -96,6 +96,6 @@ export const portfolioApi = {
     if (includeLeetcode) qs.set('includeLeetcode', 'true');
     qs.set('download', 'true');
     const q = qs.toString();
-    return `/api/portfolio/export${q ? `?${q}` : ''}`;
+    return `${BASE}/portfolio/export${q ? `?${q}` : ''}`;
   },
 };
