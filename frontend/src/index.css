@@ -238,14 +238,14 @@
   }
 
   .btn-dynamic-gradient:disabled {
-    background: rgba(30, 34, 48, 0.95) !important;
-    color: rgba(255, 255, 255, 0.3) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15) !important;
-    box-shadow: none !important;
-    opacity: 1 !important;
-    transform: none !important;
-    filter: none !important;
+    background: linear-gradient(90deg, #3b82f6, #ef4444, #ffffff, #3b82f6) !important;
+    background-size: 300% 100% !important;
+    color: #0e1017 !important;
+    font-weight: 600 !important;
+    opacity: 0.9 !important;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.4), 0 0 15px rgba(239, 68, 68, 0.2) !important;
     cursor: not-allowed !important;
+    animation: gradientFlow 8s ease infinite !important;
   }
 }
 

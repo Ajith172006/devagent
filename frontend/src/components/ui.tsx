@@ -34,7 +34,7 @@ export function Button({
   className = '',
   ...props
 }: React.ButtonHTMLAttributes<HTMLButtonElement> & { variant?: 'primary' | 'ghost' }) {
-  const base = 'inline-flex items-center gap-2.5 rounded-lg px-4.5 py-2.5 text-base font-bold transition-all disabled:opacity-50 disabled:cursor-not-allowed active:scale-95 duration-150';
+  const base = 'inline-flex items-center gap-2.5 rounded-lg px-4.5 py-2.5 text-base font-bold transition-all disabled:cursor-not-allowed active:scale-95 duration-150';
   const styles =
     variant === 'primary'
       ? 'btn-dynamic-gradient text-[var(--color-ink)]'
