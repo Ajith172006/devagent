@@ -126,8 +126,15 @@
     left: 0;
     top: 0;
     bottom: 0;
-    width: 4px;
-    background: var(--gutter-color, var(--color-text-faint));
+    width: 3px;
+    background: linear-gradient(180deg, #3b82f6, #ef4444, #ffffff, #3b82f6) !important;
+    background-size: 100% 400% !important;
+    animation: neonFlow 12s ease-in-out infinite !important;
+    box-shadow: 
+      0 0 8px rgba(59, 130, 246, 0.7), 
+      0 0 14px rgba(239, 68, 68, 0.5), 
+      0 0 4px rgba(255, 255, 255, 0.6) !important;
+    z-index: 10;
   }
 
   .fade-in-slide {
