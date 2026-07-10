@@ -105,15 +105,12 @@ export class PortfolioService {
     const colors = getThemeColors(themeIndex);
 
     // Build items HTML
-    const totalSkills = skills.length;
     const skillPillsHtml = skills
-      .map((s, idx) => {
-        const angle = ((360 / totalSkills) * idx).toFixed(1);
-        return `
-      <div class="skill-pill reveal" style="top: 50%; left: 50%; transform: translate(-50%, -50%) rotate(${angle}deg) translateY(calc(-1 * var(--wheel-radius))) rotate(-${angle}deg);">
-        <span class="skill-icon">${getSkillEmoji(s)}</span>${escapeHtml(s)}
-      </div>`;
-      })
+      .map((s) => `
+      <div class="skill-pill reveal">
+        <span class="skill-icon">${getSkillEmoji(s)}</span>
+        <span class="skill-name">${escapeHtml(s)}</span>
+      </div>`)
       .join('');
 
     const timelineItemsHtml = experience
@@ -587,59 +584,51 @@ export class PortfolioService {
   }
 
   #skills { background: transparent; }
-  .skills-wheel {
-    --wheel-radius: 260px;
-    --wheel-rotation: 0deg;
-    position: relative;
-    width: min(720px, 100%);
-    aspect-ratio: 1 / 1;
+  .skills-grid {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 1.2rem;
+    max-width: 800px;
     margin: 0 auto;
-    padding: 2rem;
-    transform: rotate(var(--wheel-rotation));
-    transform-origin: center;
-    will-change: transform;
+    padding: 2rem 0;
   }
-  .skills-wheel .skill-pill {
-    position: absolute;
-    width: 120px;
-    height: 120px;
-    border-radius: 50%;
-    padding: 1rem;
+  .skill-pill {
     display: flex;
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 0.75rem;
-    text-align: center;
-    transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
-  }
-  .skills-wheel .skill-pill:hover {
-    transform: scale(1.08);
-    border-color: var(--accent);
-    color: var(--text);
-    background: rgba(124, 109, 250, 0.08);
-  }
-  .skill-pill {
-    font-size: 0.82rem;
-    color: var(--muted);
+    gap: 0.6rem;
+    width: 110px;
+    height: 110px;
+    border-radius: 16px;
     background: var(--card-bg);
     border: 1px solid var(--border);
-    cursor: default;
+    transition: transform 0.25s ease, border-color 0.25s ease, background 0.25s ease;
     backdrop-filter: blur(12px);
-    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.04), 0 8px 24px rgba(0,0,0,0.15);
+    cursor: default;
+  }
+  .skill-pill:hover {
+    transform: translateY(-6px) scale(1.05);
+    border-color: var(--accent);
+    background: rgba(124, 109, 250, 0.08);
   }
   .skill-icon {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    width: 46px;
-    height: 46px;
-    border-radius: 50%;
-    background: rgba(250,109,124,0.12);
-    color: var(--accent2);
-    font-size: 1.3rem;
+    font-size: 2.2rem;
     line-height: 1;
-    box-shadow: inset 0 0 0 1px rgba(250,109,124,0.18);
+    filter: drop-shadow(0 4px 8px rgba(0,0,0,0.2));
+  }
+  .skill-name {
+    font-size: 0.7rem;
+    font-family: 'DM Mono', monospace;
+    color: var(--muted);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    transition: color 0.25s ease;
+  }
+  .skill-pill:hover .skill-name {
+    color: var(--text);
   }
 
   .timeline {
@@ -1010,8 +999,8 @@ export class PortfolioService {
     .hero-content { max-width: 100%; }
     .hero-visual { min-height: 390px; margin-top: 1rem; }
     .hero-highlights { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-    .skills-wheel { --wheel-radius: 220px; width: min(640px, 100%); }
-    .skills-wheel .skill-pill { width: 110px; height: 110px; }
+    .skill-pill { width: 100px; height: 100px; gap: 0.5rem; }
+    .skill-icon { font-size: 1.8rem; }
   }
 
   @media (max-width: 768px) {
@@ -1025,18 +1014,22 @@ export class PortfolioService {
     .hero-floating-card { display: none; }
     .container { padding: 4rem 1.5rem; }
     .contact-box { padding: 2.5rem 1.5rem; }
-    .skills-wheel { --wheel-radius: 180px; width: min(560px, 100%); padding: 1.5rem; }
-    .skills-wheel .skill-pill { width: 100px; height: 100px; }
+    .skill-pill { width: 90px; height: 90px; gap: 0.4rem; }
+    .skill-icon { font-size: 1.6rem; }
   }
 
   @media (max-width: 540px) {
-    .skills-wheel { --wheel-radius: 140px; width: min(480px, 100%); padding: 1rem; }
-    .skills-wheel .skill-pill { width: 90px; height: 90px; }
+    .skills-grid { gap: 0.8rem; }
+    .skill-pill { width: 85px; height: 85px; border-radius: 12px; }
+    .skill-icon { font-size: 1.4rem; }
+    .skill-name { font-size: 0.65rem; }
   }
 
   @media (max-width: 420px) {
-    .skills-wheel { --wheel-radius: 110px; width: min(380px, 100%); padding: 0.75rem; }
-    .skills-wheel .skill-pill { width: 80px; height: 80px; }
+    .skills-grid { gap: 0.6rem; }
+    .skill-pill { width: 75px; height: 75px; }
+    .skill-icon { font-size: 1.2rem; }
+    .skill-name { font-size: 0.6rem; }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -1117,7 +1110,7 @@ export class PortfolioService {
     <div class="section-label reveal">Skills</div>
     <h2 class="section-title reveal">Tech Stack</h2>
     <p class="section-intro reveal">A practical toolkit for turning ideas into responsive interfaces, reliable APIs, and polished product experiences.</p>
-    <div class="skills-wheel">
+    <div class="skills-grid">
       ${skillPillsHtml}
     </div>
   </div>
@@ -1272,26 +1265,6 @@ ${education.length || certifications.length ? `
     reveals.forEach(el => observer.observe(el));
   }
 
-  function initSkillsWheel() {
-    const skillsSection = document.getElementById('skills');
-    const wheel = skillsSection?.querySelector('.skills-wheel');
-
-    if (!wheel || !skillsSection) return;
-
-    const updateRotation = () => {
-      const sectionTop = skillsSection.offsetTop;
-      const sectionHeight = skillsSection.offsetHeight;
-      const start = sectionTop - window.innerHeight * 0.7;
-      const end = sectionTop + sectionHeight - window.innerHeight * 0.2;
-      const progress = Math.max(0, Math.min(1, (window.scrollY - start) / (end - start || 1)));
-      wheel.style.setProperty('--wheel-rotation', \`\${progress * 360}deg\`);
-    };
-
-    window.addEventListener('scroll', updateRotation, { passive: true });
-    window.addEventListener('resize', updateRotation);
-    updateRotation();
-  }
-
   function initNavigation() {
     const nav = document.querySelector('nav');
     const links = document.querySelectorAll('.nav-links a');
@@ -1403,7 +1376,7 @@ ${education.length || certifications.length ? `
   window.addEventListener('DOMContentLoaded', () => {
     initScrollProgress();
     initRevealObserver();
-    initSkillsWheel();
+
     initNavigation();
     initHeroTilt();
     initThemeSwitcher();
