@@ -64,7 +64,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col neon-border-right transition-transform duration-300 md:static md:translate-x-0 md:w-56 shrink-0 relative overflow-hidden bg-[var(--color-ink-panel)] ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col neon-border-right transition-transform duration-300 md:relative md:translate-x-0 md:w-56 shrink-0 overflow-hidden bg-[var(--color-ink-panel)] ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
