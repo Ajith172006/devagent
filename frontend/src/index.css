@@ -152,5 +152,42 @@
   .bg-animate-flow {
     animation: bgZoomPan 50s ease-in-out infinite;
   }
+
+  @keyframes neonFlow {
+    0% {
+      background-position: 50% 0%;
+    }
+    50% {
+      background-position: 50% 100%;
+    }
+    100% {
+      background-position: 50% 0%;
+    }
+  }
+
+  .neon-border-right {
+    position: relative;
+  }
+
+  .neon-border-right::after {
+    content: '';
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 2px;
+    background: linear-gradient(180deg, #3b82f6, #ef4444, #ffffff, #3b82f6);
+    background-size: 100% 400%;
+    animation: neonFlow 12s ease-in-out infinite;
+    box-shadow: 0 0 10px rgba(59, 130, 246, 0.5), 0 0 20px rgba(239, 68, 68, 0.3);
+    z-index: 10;
+  }
+
+  .active-nav-link {
+    background: linear-gradient(90deg, rgba(59, 130, 246, 0.15) 0%, rgba(239, 68, 68, 0.05) 100%) !important;
+    color: #ffffff !important;
+    border-left: 2px solid #3b82f6 !important;
+    box-shadow: 0 0 12px rgba(59, 130, 246, 0.15);
+  }
 }
 
