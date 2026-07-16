@@ -364,12 +364,7 @@ export function Profile() {
               type="file"
               accept=".pdf"
               onChange={handleBottomResumeUpload}
-              className="block w-full text-sm text-[var(--color-text-muted)]
-                file:mr-4 file:py-2 file:px-4
-                file:rounded-full file:border-0
-                file:text-sm
-                file:btn-dynamic-gradient
-                hover:file:opacity-90"
+              className="block w-full text-sm text-[var(--color-text-muted)] profile-file-input cursor-pointer"
             />
             {form.resumeText && form.resumeText.startsWith('data:') && (
               <p className="mt-2 text-xs text-[var(--color-diff-green)]">✓ Resume PDF attached and ready to be analyzed.</p>

@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from 'react';
+import { useState, useEffect, type ReactNode } from 'react';
 import { useLocation } from 'react-router-dom';
 import { Sidebar } from './Sidebar';
 import { TopBar } from './TopBar';
@@ -6,6 +6,14 @@ import { TopBar } from './TopBar';
 export function Layout({ children }: { children: ReactNode }) {
   const location = useLocation();
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const getRouteTitle = (path: string) => {
     switch (path) {
@@ -58,7 +66,7 @@ export function Layout({ children }: { children: ReactNode }) {
     }
   };
 
-  const bgImage = getBgImage(location.pathname);
+  const bgImage = isMobile ? '/bg-mobile-portrait.png' : getBgImage(location.pathname);
 
   return (
     <div className="flex h-screen text-[var(--color-text)] relative overflow-hidden bg-[var(--color-ink)]">

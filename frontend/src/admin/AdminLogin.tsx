@@ -33,11 +33,11 @@ export function AdminLogin({ onAuth }: { onAuth: (s: string) => void }) {
       <div style={s.card}>
         <div style={s.logo}>
           <svg width="36" height="36" viewBox="0 0 32 32">
-            <rect width="32" height="32" rx="7" fill="#1e2230" />
-            <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#e8b339" />
-            <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#e7e9f0" />
-            <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#4fae84" />
-            <rect x="12" y="22" width="7" height="3" rx="1.5" fill="#565c72" />
+            <rect width="32" height="32" rx="7" fill="#1e2230" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+            <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#3b82f6" />
+            <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#ffffff" />
+            <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#ef4444" />
+            <rect x="12" y="22" width="7" height="3" rx="1.5" fill="#8b90a3" />
           </svg>
           <span style={s.logoText}>DevAgent Admin</span>
         </div>
@@ -71,6 +71,6 @@ const s: Record<string, React.CSSProperties> = {
   form: { display: 'flex', flexDirection: 'column', gap: 10 },
   input: { background: '#1e2230', border: '1px solid #262b3a', borderRadius: 8, padding: '10px 12px', color: '#e7e9f0', fontFamily: 'monospace', fontSize: 14, outline: 'none' },
   err: { color: '#e2596b', fontSize: 12, margin: 0, fontFamily: 'system-ui,sans-serif' },
-  btn: { background: '#e8b339', color: '#0e1017', border: 'none', borderRadius: 8, padding: '10px 16px', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'system-ui,sans-serif' },
+  btn: { background: '#3b82f6', color: '#ffffff', border: 'none', borderRadius: 8, padding: '10px 16px', fontWeight: 700, fontSize: 14, cursor: 'pointer', fontFamily: 'system-ui,sans-serif', transition: 'background 0.15s, transform 0.1s' },
   hint: { fontFamily: 'monospace', fontSize: 11, color: '#565c72', marginTop: 20, textAlign: 'center' },
 };

@@ -1,3 +1,4 @@
+import { useState, useEffect } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
 import {
   LayoutDashboard,
@@ -10,6 +11,7 @@ import {
   Globe,
   StickyNote,
   LogOut,
+  X,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -28,6 +30,14 @@ const links = [
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const { user, profile, logout } = useAuth();
   const location = useLocation();
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const checkMobile = () => setIsMobile(window.innerWidth < 768);
+    checkMobile();
+    window.addEventListener('resize', checkMobile);
+    return () => window.removeEventListener('resize', checkMobile);
+  }, []);
 
   const getBgImage = (path: string) => {
     switch (path) {
@@ -51,7 +61,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
     }
   };
 
-  const bgImage = getBgImage(location.pathname);
+  const bgImage = isMobile ? '/bg-mobile-portrait.png' : getBgImage(location.pathname);
 
   return (
     <>
@@ -64,7 +74,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 flex w-64 flex-col neon-border-right transition-transform duration-300 md:relative md:translate-x-0 md:w-56 shrink-0 overflow-hidden bg-[var(--color-ink-panel)] ${
+        className={`fixed inset-y-0 left-0 z-50 flex w-[290px] flex-col neon-border-right transition-transform duration-300 md:relative md:translate-x-0 md:w-56 shrink-0 overflow-hidden bg-[var(--color-ink-panel)] ${
           isOpen ? 'translate-x-0' : '-translate-x-full'
         }`}
       >
@@ -78,18 +88,29 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
           }}
         />
 
-        <div className="flex items-center gap-2 px-5 py-5 relative z-10">
-          <svg width="22" height="22" viewBox="0 0 32 32" aria-hidden="true">
-            <rect width="32" height="32" rx="7" fill="rgba(59,130,246,0.15)" stroke="rgba(255,255,255,0.1)" />
-            <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#3b82f6" />
-            <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#ffffff" />
-            <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#ef4444" />
-            <rect x="12" y="22" width="7" height="3" rx="1.5" fill="var(--color-text-muted)" />
-          </svg>
-          <span className="font-display text-[15px] font-bold tracking-tight bg-gradient-to-r from-blue-400 via-white to-red-400 bg-clip-text text-transparent">DevAgent</span>
+        <div className="flex items-center justify-between px-6 py-6 md:px-5 md:py-5 relative z-10">
+          <div className="flex items-center gap-3.5 md:gap-2">
+            <svg className="w-[28px] h-[28px] md:w-[22px] md:h-[22px]" viewBox="0 0 32 32" aria-hidden="true">
+              <rect width="32" height="32" rx="7" fill="rgba(59,130,246,0.15)" stroke="rgba(255,255,255,0.1)" />
+              <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#3b82f6" />
+              <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#ffffff" />
+              <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#ef4444" />
+              <rect x="12" y="22" width="7" height="3" rx="1.5" fill="var(--color-text-muted)" />
+            </svg>
+            <span className="font-display text-xl md:text-[15px] font-bold tracking-tight bg-gradient-to-r from-blue-400 via-white to-red-400 bg-clip-text text-transparent">DevAgent</span>
+          </div>
+          {onClose && (
+            <button
+              onClick={onClose}
+              className="md:hidden p-1.5 rounded-lg hover:bg-[var(--color-ink-panel-raised)] text-[var(--color-text-muted)] transition-colors"
+              title="Close Menu"
+            >
+              <X size={24} />
+            </button>
+          )}
         </div>
 
-        <nav className="flex-1 space-y-0.5 px-3 relative z-10">
+        <nav className="flex-1 space-y-2 md:space-y-0.5 px-6 md:px-3 relative z-10">
           {links.map(({ to, label, icon: Icon, end }) => (
             <NavLink
               key={to}
@@ -97,40 +118,40 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
               end={end}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-2.5 rounded-lg px-3 py-2 text-sm transition-all duration-200 relative overflow-hidden group border-l-2 ${
+                `flex items-center gap-3.5 md:gap-2.5 rounded-lg px-4 py-3 md:px-3 md:py-2 text-base md:text-sm transition-all duration-200 relative overflow-hidden group border-l-2 ${
                   isActive
                     ? 'active-nav-link'
                     : 'text-[var(--color-text-muted)] border-transparent hover:bg-[rgba(59,130,246,0.05)] hover:text-white hover:translate-x-1'
                 }`
               }
             >
-              <Icon size={16} strokeWidth={1.75} className="transition-transform group-hover:scale-110 group-hover:text-white" />
+              <Icon strokeWidth={1.75} className="transition-transform group-hover:scale-110 group-hover:text-white w-5 h-5 md:w-4 md:h-4" />
               {label}
             </NavLink>
           ))}
         </nav>
 
         {/* User footer */}
-        <div className="border-t border-[var(--color-ink-border)] px-4 py-3 relative z-10">
-          <div className="flex items-center gap-2.5 mb-2">
+        <div className="border-t border-[var(--color-ink-border)] px-6 py-5 md:px-4 md:py-3 relative z-10">
+          <div className="flex items-center gap-3.5 md:gap-2.5 mb-4 md:mb-2">
             {user?.photoURL
-              ? <img src={user.photoURL} alt="avatar" className="h-6 w-6 rounded-full" />
-              : <div className="h-6 w-6 rounded-full bg-[var(--color-ink-panel-raised)]" />
+              ? <img src={user.photoURL} alt="avatar" className="h-10 w-10 md:h-6 md:w-6 rounded-full" />
+              : <div className="h-10 w-10 md:h-6 md:w-6 rounded-full bg-[var(--color-ink-panel-raised)]" />
             }
             <div className="min-w-0">
-              <p className="truncate text-xs font-medium text-[var(--color-text)]">
+              <p className="truncate text-sm md:text-xs font-semibold md:font-medium text-[var(--color-text)]">
                 {profile?.name || user?.displayName || 'User'}
               </p>
-              <p className="truncate text-[10px] text-[var(--color-text-faint)]">
+              <p className="truncate text-xs md:text-[10px] text-[var(--color-text-faint)]">
                 {profile?.profession || user?.email || ''}
               </p>
             </div>
           </div>
           <button
             onClick={logout}
-            className="flex w-full items-center gap-2 rounded-md px-2 py-1.5 text-xs text-[var(--color-text-faint)] hover:bg-[var(--color-ink-panel-raised)] hover:text-[var(--color-diff-red)] transition-colors"
+            className="flex w-full items-center gap-2.5 md:gap-2 rounded-md px-3 py-2.5 md:px-2 md:py-1.5 text-sm md:text-xs text-[var(--color-text-faint)] hover:bg-[var(--color-ink-panel-raised)] hover:text-[var(--color-diff-red)] transition-colors"
           >
-            <LogOut size={13} />
+            <LogOut className="w-[16px] h-[16px] md:w-[13px] md:h-[13px]" />
             Sign out
           </button>
         </div>

@@ -34,10 +34,10 @@ export function AdminLayout({
           {!collapsed && (
             <div style={s.brand}>
               <svg width="20" height="20" viewBox="0 0 32 32">
-                <rect width="32" height="32" rx="6" fill="#1e2230" />
-                <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#e8b339" />
-                <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#e7e9f0" />
-                <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#4fae84" />
+                <rect width="32" height="32" rx="6" fill="#1e2230" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
+                <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#3b82f6" />
+                <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#ffffff" />
+                <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#ef4444" />
               </svg>
               <span style={s.brandText}>Admin</span>
             </div>
