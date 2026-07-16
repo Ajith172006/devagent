@@ -25,14 +25,23 @@ export class LeetcodeService {
     return this.repo.save(entry);
   }
 
-  async findAll(userId: string, params: { status?: LeetcodeStatus; difficulty?: LeetcodeDifficulty; topic?: string }) {
+  async findAll(
+    userId: string,
+    params: { status?: LeetcodeStatus; difficulty?: LeetcodeDifficulty; topic?: string; page?: number; limit?: number },
+  ) {
     const all = await this.repo.find({ where: { userId }, order: { updatedAt: 'DESC' } });
-    return all.filter((e) => {
+    const filtered = all.filter((e) => {
       if (params.status && e.status !== params.status) return false;
       if (params.difficulty && e.difficulty !== params.difficulty) return false;
       if (params.topic && !e.topics.map((t) => t.toLowerCase()).includes(params.topic.toLowerCase())) return false;
       return true;
     });
+
+    if (params.page && params.limit) {
+      const start = (params.page - 1) * params.limit;
+      return filtered.slice(start, start + params.limit);
+    }
+    return filtered;
   }
 
   /** Admin: find all without userId filter */

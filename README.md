@@ -18,7 +18,7 @@ Two terminals:
 # terminal 1 — API on :3000
 cd backend
 npm install
-cp .env.example .env   # add ANTHROPIC_API_KEY for AI debug/explain
+cp .env.example .env   # add GEMINI_API_KEY for AI debug/explain
 npm run start:dev
 
 # terminal 2 — UI on :5173, proxies /api to :3000

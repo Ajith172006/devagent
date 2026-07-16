@@ -22,14 +22,25 @@ export class NotesService {
     return this.repo.save(note);
   }
 
-  async findAll(userId: string, search?: string): Promise<Note[]> {
+  async findAll(
+    userId: string,
+    params: { search?: string; page?: number; limit?: number } = {},
+  ): Promise<Note[]> {
     const all = await this.repo.find({
       where: { userId },
       order: { pinned: 'DESC', updatedAt: 'DESC' },
     });
-    if (!search) return all;
-    const needle = search.toLowerCase();
-    return all.filter((n) => `${n.title} ${n.content}`.toLowerCase().includes(needle));
+    let filtered = all;
+    if (params.search) {
+      const needle = params.search.toLowerCase();
+      filtered = all.filter((n) => `${n.title} ${n.content}`.toLowerCase().includes(needle));
+    }
+
+    if (params.page && params.limit) {
+      const start = (params.page - 1) * params.limit;
+      return filtered.slice(start, start + params.limit);
+    }
+    return filtered;
   }
 
   /** Admin: find all without userId filter */

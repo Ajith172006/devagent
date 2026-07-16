@@ -1,28 +1,25 @@
-import { Controller, Get, Header, Headers, Query, UnauthorizedException, Res } from '@nestjs/common';
+import { Controller, Get, Header, Query, UnauthorizedException, Res, UseGuards } from '@nestjs/common';
 import { Response } from 'express';
 import { PortfolioService } from './portfolio.service';
+import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
 
 @Controller('portfolio')
 export class PortfolioController {
   constructor(private readonly portfolioService: PortfolioService) {}
 
-  private uid(h: string): string {
-    if (!h) throw new UnauthorizedException('x-user-id header is required');
-    return h;
-  }
-
   @Get()
+  @UseGuards(FirebaseAuthGuard)
   generate(
-    @Headers('x-user-id') uid: string,
+    @CurrentUser() uid: string,
     @Query('githubUsername') githubUsername?: string,
   ) {
-    return this.portfolioService.generate(this.uid(uid), { githubUsername });
+    return this.portfolioService.generate(uid, { githubUsername });
   }
 
   @Get('export')
   @Header('Content-Type', 'text/html')
   export(
-    @Headers('x-user-id') uidHeader: string,
     @Query('userId') uidQuery: string,
     @Query('githubUsername') githubUsername?: string,
     @Query('displayName') displayName?: string,
@@ -30,11 +27,13 @@ export class PortfolioController {
     @Query('download') download?: string,
     @Res({ passthrough: true }) res?: Response,
   ) {
-    const uid = uidHeader || uidQuery;
+    if (!uidQuery) {
+      throw new UnauthorizedException('userId query parameter is required to export portfolio');
+    }
     if (download === 'true' && res) {
       res.setHeader('Content-Disposition', 'attachment; filename="portfolio.html"');
     }
-    return this.portfolioService.generateHtml(this.uid(uid), {
+    return this.portfolioService.generateHtml(uidQuery, {
       githubUsername,
       displayName,
       includeLeetcode: includeLeetcode === 'true',

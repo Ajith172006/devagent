@@ -21,9 +21,7 @@ export class AdminGuard implements CanActivate {
       );
     }
 
-    const provided =
-      req.headers['x-admin-secret'] ||
-      req.query['secret'];
+    const provided = req.headers['x-admin-secret'];
 
     if (!provided || provided !== secret) {
       throw new UnauthorizedException('Invalid admin secret.');

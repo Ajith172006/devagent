@@ -1,6 +1,8 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
+import { ThrottlerModule, ThrottlerGuard } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 import { SnippetsModule } from './snippets/snippets.module';
 import { NotesModule } from './notes/notes.module';
@@ -25,8 +27,12 @@ import { User } from './users/user.entity';
       type: 'mongodb',
       url: process.env.MONGODB_URI,
       entities: [Snippet, Note, Goal, LeetcodeEntry, User],
-      synchronize: true,
+      synchronize: process.env.NODE_ENV !== 'production',
     }),
+    ThrottlerModule.forRoot([{
+      ttl: 60000, // 1 minute
+      limit: 100, // 100 requests per minute
+    }]),
     UsersModule,
     SnippetsModule,
     NotesModule,
@@ -36,6 +42,12 @@ import { User } from './users/user.entity';
     AiModule,
     PortfolioModule,
     AdminModule,
+  ],
+  providers: [
+    {
+      provide: APP_GUARD,
+      useClass: ThrottlerGuard,
+    },
   ],
 })
 export class AppModule {}

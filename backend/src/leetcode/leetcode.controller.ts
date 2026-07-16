@@ -1,53 +1,61 @@
 import {
-  Body, Controller, Delete, Get, Headers,
-  Param, Patch, Post, Query, UnauthorizedException,
+  Body, Controller, Delete, Get,
+  Param, Patch, Post, Query, UseGuards,
 } from '@nestjs/common';
 import { LeetcodeService } from './leetcode.service';
 import { CreateEntryDto } from './dto/create-entry.dto';
 import { UpdateEntryDto } from './dto/update-entry.dto';
 import { LeetcodeDifficulty, LeetcodeStatus } from './leetcode-entry.entity';
+import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
 
 @Controller('leetcode')
+@UseGuards(FirebaseAuthGuard)
 export class LeetcodeController {
   constructor(private readonly leetcodeService: LeetcodeService) {}
 
-  private uid(h: string): string {
-    if (!h) throw new UnauthorizedException('x-user-id header is required');
-    return h;
-  }
-
   @Post()
-  create(@Headers('x-user-id') uid: string, @Body() dto: CreateEntryDto) {
-    return this.leetcodeService.create(this.uid(uid), dto);
+  create(@CurrentUser() uid: string, @Body() dto: CreateEntryDto) {
+    return this.leetcodeService.create(uid, dto);
   }
 
   @Get()
   findAll(
-    @Headers('x-user-id') uid: string,
+    @CurrentUser() uid: string,
     @Query('status') status?: LeetcodeStatus,
     @Query('difficulty') difficulty?: LeetcodeDifficulty,
     @Query('topic') topic?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.leetcodeService.findAll(this.uid(uid), { status, difficulty, topic });
+    const pageNum = page ? parseInt(page, 10) : undefined;
+    const limitNum = limit ? parseInt(limit, 10) : undefined;
+    return this.leetcodeService.findAll(uid, {
+      status,
+      difficulty,
+      topic,
+      page: pageNum,
+      limit: limitNum,
+    });
   }
 
   @Get('stats')
-  stats(@Headers('x-user-id') uid: string) {
-    return this.leetcodeService.stats(this.uid(uid));
+  stats(@CurrentUser() uid: string) {
+    return this.leetcodeService.stats(uid);
   }
 
   @Get(':id')
-  findOne(@Headers('x-user-id') uid: string, @Param('id') id: string) {
-    return this.leetcodeService.findOne(this.uid(uid), id);
+  findOne(@CurrentUser() uid: string, @Param('id') id: string) {
+    return this.leetcodeService.findOne(uid, id);
   }
 
   @Patch(':id')
-  update(@Headers('x-user-id') uid: string, @Param('id') id: string, @Body() dto: UpdateEntryDto) {
-    return this.leetcodeService.update(this.uid(uid), id, dto);
+  update(@CurrentUser() uid: string, @Param('id') id: string, @Body() dto: UpdateEntryDto) {
+    return this.leetcodeService.update(uid, id, dto);
   }
 
   @Delete(':id')
-  remove(@Headers('x-user-id') uid: string, @Param('id') id: string) {
-    return this.leetcodeService.remove(this.uid(uid), id);
+  remove(@CurrentUser() uid: string, @Param('id') id: string) {
+    return this.leetcodeService.remove(uid, id);
   }
 }

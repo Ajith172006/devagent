@@ -22,9 +22,12 @@ export class SnippetsService {
     return this.repo.save(snippet);
   }
 
-  async findAll(userId: string, params: { language?: string; tag?: string; search?: string }): Promise<Snippet[]> {
+  async findAll(
+    userId: string,
+    params: { language?: string; tag?: string; search?: string; page?: number; limit?: number },
+  ): Promise<Snippet[]> {
     const all = await this.repo.find({ where: { userId }, order: { updatedAt: 'DESC' } });
-    return all.filter((s) => {
+    const filtered = all.filter((s) => {
       if (params.language && s.language.toLowerCase() !== params.language.toLowerCase()) return false;
       if (params.tag && !s.tags.map((t) => t.toLowerCase()).includes(params.tag.toLowerCase())) return false;
       if (params.search) {
@@ -34,6 +37,12 @@ export class SnippetsService {
       }
       return true;
     });
+
+    if (params.page && params.limit) {
+      const start = (params.page - 1) * params.limit;
+      return filtered.slice(start, start + params.limit);
+    }
+    return filtered;
   }
 
   /** Admin: find all without userId filter */

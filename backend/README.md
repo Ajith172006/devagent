@@ -10,7 +10,7 @@ goals with streaks, a portfolio generator, and notes — behind one clean REST A
 - **NestJS 10** (TypeScript, modular architecture)
 - **TypeORM** with the pure-JS `sql.js` (SQLite/WASM) driver — no native
   build step, works anywhere Node runs
-- **Anthropic SDK** for AI debugging and code explanations
+- **Google Gen AI SDK** for AI debugging and code explanations (Gemini)
 - **GitHub REST API** (via native `fetch`) for profile/repo summaries
 - `class-validator` / `class-transformer` for request validation
 
@@ -18,7 +18,7 @@ goals with streaks, a portfolio generator, and notes — behind one clean REST A
 
 ```
 src/
-  ai/            AI debugging + code explanation (Anthropic API)
+  ai/            AI debugging + code explanation (Google Gemini API)
   github/        GitHub profile/repo summary integration
   goals/         Daily coding goals + streak tracking
   leetcode/      LeetCode problem tracker + stats
@@ -38,7 +38,7 @@ logic), `*.controller.ts` (routes), `*.module.ts` (wiring).
 ```bash
 npm install
 cp .env.example .env
-# edit .env and add ANTHROPIC_API_KEY (required for /ai/*),
+# edit .env and add GEMINI_API_KEY (required for /ai/*),
 # optionally GITHUB_TOKEN (raises GitHub's rate limit from 60 to 5000/hr)
 
 npm run start:dev
@@ -67,7 +67,7 @@ All routes are prefixed with `/api`.
 | POST | `/debug` | Debug code (`code`, `language?`, `errorMessage?`, `context?`) → root cause, fix, explanation, prevention tip |
 | POST | `/explain` | Explain code (`code`, `language?`, `level?: beginner\|intermediate\|expert`) |
 
-Requires `ANTHROPIC_API_KEY` in `.env`.
+Requires `GEMINI_API_KEY` in `.env`.
 
 ### GitHub — `/api/github`
 | Method | Path | Description |
@@ -121,5 +121,5 @@ Requires `ANTHROPIC_API_KEY` in `.env`.
   single file on disk.
 - **GitHub calls are unauthenticated by default**: fine for light use (60
   req/hr per IP). Set `GITHUB_TOKEN` in `.env` to raise that to 5,000/hr.
-- **AI endpoints fail fast with a clear error** if `ANTHROPIC_API_KEY` isn't
+- **AI endpoints fail fast with a clear error** if `GEMINI_API_KEY` isn't
   set, rather than silently returning nothing.

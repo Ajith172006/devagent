@@ -1,47 +1,49 @@
 import {
-  Body, Controller, Delete, Get, Headers,
-  Param, Patch, Post, Query, UnauthorizedException,
+  Body, Controller, Delete, Get,
+  Param, Patch, Post, Query, UseGuards,
 } from '@nestjs/common';
 import { SnippetsService } from './snippets.service';
 import { CreateSnippetDto } from './dto/create-snippet.dto';
 import { UpdateSnippetDto } from './dto/update-snippet.dto';
+import { FirebaseAuthGuard } from '../auth/firebase-auth.guard';
+import { CurrentUser } from '../auth/current-user.decorator';
 
 @Controller('snippets')
+@UseGuards(FirebaseAuthGuard)
 export class SnippetsController {
   constructor(private readonly snippetsService: SnippetsService) {}
 
-  private uid(h: string): string {
-    if (!h) throw new UnauthorizedException('x-user-id header is required');
-    return h;
-  }
-
   @Post()
-  create(@Headers('x-user-id') uid: string, @Body() dto: CreateSnippetDto) {
-    return this.snippetsService.create(this.uid(uid), dto);
+  create(@CurrentUser() uid: string, @Body() dto: CreateSnippetDto) {
+    return this.snippetsService.create(uid, dto);
   }
 
   @Get()
   findAll(
-    @Headers('x-user-id') uid: string,
+    @CurrentUser() uid: string,
     @Query('language') language?: string,
     @Query('tag') tag?: string,
     @Query('search') search?: string,
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
   ) {
-    return this.snippetsService.findAll(this.uid(uid), { language, tag, search });
+    const pageNum = page ? parseInt(page, 10) : undefined;
+    const limitNum = limit ? parseInt(limit, 10) : undefined;
+    return this.snippetsService.findAll(uid, { language, tag, search, page: pageNum, limit: limitNum });
   }
 
   @Get(':id')
-  findOne(@Headers('x-user-id') uid: string, @Param('id') id: string) {
-    return this.snippetsService.findOne(this.uid(uid), id);
+  findOne(@CurrentUser() uid: string, @Param('id') id: string) {
+    return this.snippetsService.findOne(uid, id);
   }
 
   @Patch(':id')
-  update(@Headers('x-user-id') uid: string, @Param('id') id: string, @Body() dto: UpdateSnippetDto) {
-    return this.snippetsService.update(this.uid(uid), id, dto);
+  update(@CurrentUser() uid: string, @Param('id') id: string, @Body() dto: UpdateSnippetDto) {
+    return this.snippetsService.update(uid, id, dto);
   }
 
   @Delete(':id')
-  remove(@Headers('x-user-id') uid: string, @Param('id') id: string) {
-    return this.snippetsService.remove(this.uid(uid), id);
+  remove(@CurrentUser() uid: string, @Param('id') id: string) {
+    return this.snippetsService.remove(uid, id);
   }
 }

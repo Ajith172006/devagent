@@ -2,6 +2,7 @@ import {
   Controller, Delete, Get, Param,
   UseGuards, HttpCode, HttpStatus,
 } from '@nestjs/common';
+import { Throttle } from '@nestjs/throttler';
 import { AdminGuard } from './admin.guard';
 import { SnippetsService } from '../snippets/snippets.service';
 import { NotesService } from '../notes/notes.service';
@@ -11,6 +12,7 @@ import { UsersService } from '../users/users.service';
 
 @Controller('admin')
 @UseGuards(AdminGuard)
+@Throttle({ default: { limit: 5, ttl: 60000 } })
 export class AdminController {
   constructor(
     private readonly snippets: SnippetsService,

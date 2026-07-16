@@ -1,3 +1,5 @@
+import { auth } from '../firebase';
+
 export const BASE = import.meta.env.VITE_API_URL || '/api';
 
 export class ApiError extends Error {
@@ -8,7 +10,7 @@ export class ApiError extends Error {
   }
 }
 
-// The current user's Firebase UID — set by AuthContext after sign-in
+// The current user's Firebase UID — fallback/bypass set by AuthContext
 let currentUserId: string | null = null;
 export function setCurrentUserId(uid: string | null) { currentUserId = uid; }
 
@@ -17,7 +19,19 @@ async function request<T>(path: string, init?: RequestInit): Promise<T> {
     'Content-Type': 'application/json',
     ...(init?.headers as Record<string, string> || {}),
   };
-  if (currentUserId) headers['x-user-id'] = currentUserId;
+
+  if (auth?.currentUser) {
+    try {
+      const token = await auth.currentUser.getIdToken();
+      headers['Authorization'] = `Bearer ${token}`;
+    } catch (err) {
+      console.error('Error fetching Firebase ID token:', err);
+    }
+  } else {
+    // Development/Bypass mode
+    const fallbackUid = currentUserId || 'dev-local-user';
+    headers['x-user-id'] = fallbackUid;
+  }
 
   const res = await fetch(`${BASE}${path}`, { ...init, headers });
 

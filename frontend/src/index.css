@@ -2,7 +2,7 @@
 
 @theme {
   --font-display: "Playfair Display", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
-  --font-body: "Playfair Display", "Inter", ui-sans-serif, system-ui, sans-serif;
+  --font-body: "Inter", "Space Grotesk", ui-sans-serif, system-ui, sans-serif;
   --font-mono: "JetBrains Mono", ui-monospace, "SFMono-Regular", monospace;
 
   --color-ink: #141722;
@@ -13,8 +13,8 @@
   --color-text-muted: #b3b7c9;
   --color-text-faint: #7d849e;
 
-  --color-amber: #60a5fa;
-  --color-amber-dim: #3b82f6;
+  --color-amber: #fbbf24;
+  --color-amber-dim: #d97706;
   --color-diff-green: #5ddc9e;
   --color-diff-green-dim: #38845e;
   --color-diff-red: #f87171;
@@ -26,31 +26,31 @@
     background-color: var(--color-ink);
     color: var(--color-text);
     font-family: var(--font-body);
-    font-size: 16.5px;
-    letter-spacing: 0.01em;
+    font-size: 14px;
+    letter-spacing: 0.005em;
   }
 
   @media (min-width: 640px) {
     html {
-      font-size: 17.5px;
+      font-size: 14.5px;
     }
   }
 
   @media (min-width: 768px) {
     html {
-      font-size: 18.5px;
+      font-size: 15px;
     }
   }
 
   @media (min-width: 1024px) {
     html {
-      font-size: 19.5px;
+      font-size: 15.5px;
     }
   }
 
   @media (min-width: 1280px) {
     html {
-      font-size: 20.5px;
+      font-size: 16px;
     }
   }
 
@@ -95,6 +95,10 @@
       transition-duration: 0.01ms !important;
       scroll-behavior: auto !important;
     }
+    .gutter-card::before, .neon-border-right::after, .btn-dynamic-gradient, .bg-animate-flow {
+      animation: none !important;
+      background-size: auto !important;
+    }
   }
 }
 
@@ -127,14 +131,10 @@
     top: 0;
     bottom: 0;
     width: 3px;
-    background: linear-gradient(180deg, #3b82f6, #ffffff, #93c5fd, #3b82f6) !important;
-    background-size: 100% 400% !important;
-    animation: neonFlow 12s ease-in-out infinite !important;
-    box-shadow: 
-      0 0 8px rgba(59, 130, 246, 0.8), 
-      0 0 14px rgba(147, 197, 253, 0.6), 
-      0 0 4px rgba(255, 255, 255, 0.8) !important;
+    background: var(--gutter-color, var(--color-text-faint));
+    box-shadow: 0 0 8px var(--gutter-color, var(--color-text-faint));
     z-index: 10;
+    transition: background 0.3s ease, box-shadow 0.3s ease;
   }
 
   .fade-in-slide {
