@@ -32,13 +32,7 @@ export function AdminLogin({ onAuth }: { onAuth: (s: string) => void }) {
     <div style={s.page}>
       <div style={s.card}>
         <div style={s.logo}>
-          <svg width="36" height="36" viewBox="0 0 32 32">
-            <rect width="32" height="32" rx="7" fill="#1e2230" stroke="rgba(255,255,255,0.05)" stroke-width="1" />
-            <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#3b82f6" />
-            <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#ffffff" />
-            <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#ef4444" />
-            <rect x="12" y="22" width="7" height="3" rx="1.5" fill="#8b90a3" />
-          </svg>
+          <img src="/devagent.png" alt="DevAgent Icon" style={{ width: 36, height: 36, borderRadius: 8, objectFit: 'contain' }} />
           <span style={s.logoText}>DevAgent Admin</span>
         </div>
         <p style={s.sub}>Enter your admin secret to continue</p>

@@ -90,13 +90,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
 
         <div className="flex items-center justify-between px-6 py-6 md:px-5 md:py-5 relative z-10">
           <div className="flex items-center gap-3.5 md:gap-2">
-            <svg className="w-[28px] h-[28px] md:w-[22px] md:h-[22px]" viewBox="0 0 32 32" aria-hidden="true">
-              <rect width="32" height="32" rx="7" fill="rgba(59,130,246,0.15)" stroke="rgba(255,255,255,0.1)" />
-              <rect x="4" y="6" width="3" height="20" rx="1.5" fill="#3b82f6" />
-              <rect x="12" y="10" width="16" height="3" rx="1.5" fill="#ffffff" />
-              <rect x="12" y="16" width="11" height="3" rx="1.5" fill="#ef4444" />
-              <rect x="12" y="22" width="7" height="3" rx="1.5" fill="var(--color-text-muted)" />
-            </svg>
+            <img src="/devagent.png" alt="DevAgent Icon" className="w-[32px] h-[32px] md:w-[26px] md:h-[26px] rounded-lg object-contain shadow-md" />
             <span className="font-display text-xl md:text-[15px] font-bold tracking-tight bg-gradient-to-r from-blue-400 via-white to-red-400 bg-clip-text text-transparent">DevAgent</span>
           </div>
           {onClose && (
