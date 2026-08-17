@@ -16,6 +16,9 @@ services:
     rootDir: frontend
     buildCommand: npm install && npm run build
     staticPublishPath: frontend/dist
+    envVars:
+      - key: VITE_API_URL
+        value: https://devagent-5xf2.onrender.com/api
     routes:
       - type: rewrite
         source: /*
