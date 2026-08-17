@@ -4,6 +4,10 @@ node_modules/
 # Build output
 dist/
 build/
+target/
+*.class
+*.jar
+*.war
 
 # Environment files — never commit real secrets
 .env

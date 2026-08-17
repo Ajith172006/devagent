@@ -7,9 +7,9 @@ export default defineConfig({
   server: {
     port: 5173,
     proxy: {
-      // forwards to the DevAgent NestJS API (npm run start:dev, port 3000)
+      // forwards to the DevAgent Spring Boot API (mvnw spring-boot:run, port 8080)
       '/api': {
-        target: 'http://localhost:3000',
+        target: 'http://localhost:8080',
         changeOrigin: true,
       },
     },
