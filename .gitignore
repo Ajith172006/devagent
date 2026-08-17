@@ -5,8 +5,9 @@ node_modules/
 dist/
 build/
 target/
-*.class
 *.jar
+!.mvn/wrapper/maven-wrapper.jar
+!backend/.mvn/wrapper/maven-wrapper.jar
 *.war
 
 # Environment files — never commit real secrets
