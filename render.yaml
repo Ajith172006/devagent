@@ -1,0 +1,22 @@
+services:
+  # Spring Boot Java 21 Backend
+  - type: web
+    name: devagent-backend
+    env: docker
+    dockerContext: backend
+    dockerfilePath: backend/Dockerfile
+    envVars:
+      - key: PORT
+        value: 8080
+
+  # React 19 + Vite Frontend
+  - type: web
+    name: devagent-frontend
+    env: static
+    rootDir: frontend
+    buildCommand: npm install && npm run build
+    staticPublishPath: frontend/dist
+    routes:
+      - type: rewrite
+        source: /*
+        destination: /index.html
