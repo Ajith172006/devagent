@@ -25,14 +25,15 @@ public class FirebaseTokenFilter extends OncePerRequestFilter {
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain chain) throws ServletException, IOException {
-        // Dev bypass — accepts x-user-id header directly
+        // Dev bypass — accepts x-user-id header directly (or uses default dev-local-user)
         if (bypassFirebase) {
             String devUid = request.getHeader("x-user-id");
-            if (devUid != null && !devUid.isBlank()) {
-                setAuth(devUid, "dev@local.mock");
-                chain.doFilter(request, response);
-                return;
+            if (devUid == null || devUid.isBlank()) {
+                devUid = "dev-local-user";
             }
+            setAuth(devUid, "dev@local.mock");
+            chain.doFilter(request, response);
+            return;
         }
 
         String authHeader = request.getHeader("Authorization");
