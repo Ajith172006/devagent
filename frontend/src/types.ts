@@ -113,11 +113,17 @@ export interface PortfolioData {
       degree: string;
       school: string;
       duration: string;
+      score?: string;
     }>;
     projects?: Array<{
       title: string;
       description: string;
       tech?: string[];
+    }>;
+    certifications?: Array<{
+      name: string;
+      authority?: string;
+      date?: string;
     }>;
     contact?: {
       email?: string;
@@ -125,6 +131,7 @@ export interface PortfolioData {
       location?: string;
       github?: string;
       linkedin?: string;
+      portfolio?: string;
     };
   } | null;
   github: GithubSummary | null;

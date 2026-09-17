@@ -154,7 +154,7 @@ export function Portfolio() {
       )}
 
       {data && (
-        <div className="space-y-5">
+        <div className="space-y-6">
           {/* Profile Header Card */}
           <div className="rounded-xl border border-[var(--color-ink-border)] bg-[var(--color-ink-panel)] p-6 flex flex-col md:flex-row items-start md:items-center gap-5">
             {data.user?.photoUrl || photoUrl ? (
@@ -168,30 +168,48 @@ export function Portfolio() {
                 👤
               </div>
             )}
-            <div className="space-y-1">
-              <h2 className="text-xl font-bold font-display text-[var(--color-text)]">
-                {displayName || data.user?.name || 'Developer'}
-              </h2>
-              {(data.user?.profession || data.resumeAnalysis?.profession) && (
-                <p className="text-sm font-semibold text-[var(--color-amber)]">
-                  {data.user?.profession || data.resumeAnalysis?.profession}
-                </p>
-              )}
+            <div className="space-y-2 flex-1">
+              <div>
+                <h2 className="text-xl font-bold font-display text-[var(--color-text)]">
+                  {displayName || data.resumeAnalysis?.name || data.user?.name || 'Developer'}
+                </h2>
+                {(data.user?.profession || data.resumeAnalysis?.profession) && (
+                  <p className="text-sm font-semibold text-[var(--color-amber)]">
+                    {data.user?.profession || data.resumeAnalysis?.profession}
+                  </p>
+                )}
+              </div>
               {(data.resumeAnalysis?.summary || data.github?.profile?.bio) && (
-                <p className="text-xs text-[var(--color-text-muted)] max-w-2xl leading-relaxed mt-1">
+                <p className="text-xs text-[var(--color-text-muted)] max-w-2xl leading-relaxed">
                   {data.resumeAnalysis?.summary || data.github?.profile?.bio}
                 </p>
               )}
               {data.resumeAnalysis?.contact && (
                 <div className="flex flex-wrap gap-3 text-xs text-[var(--color-text-faint)] pt-1">
                   {data.resumeAnalysis.contact.email && <span>📧 {data.resumeAnalysis.contact.email}</span>}
+                  {data.resumeAnalysis.contact.phone && <span>📞 {data.resumeAnalysis.contact.phone}</span>}
                   {data.resumeAnalysis.contact.location && <span>📍 {data.resumeAnalysis.contact.location}</span>}
-                  {data.resumeAnalysis.contact.linkedin && <span>🔗 {data.resumeAnalysis.contact.linkedin}</span>}
+                  {data.resumeAnalysis.contact.linkedin && (
+                    <a href={data.resumeAnalysis.contact.linkedin} target="_blank" rel="noopener noreferrer" className="hover:underline text-[var(--color-amber)]">
+                      🔗 LinkedIn
+                    </a>
+                  )}
+                  {data.resumeAnalysis.contact.github && (
+                    <a href={data.resumeAnalysis.contact.github} target="_blank" rel="noopener noreferrer" className="hover:underline text-[var(--color-amber)]">
+                      💻 GitHub
+                    </a>
+                  )}
+                  {data.resumeAnalysis.contact.portfolio && (
+                    <a href={data.resumeAnalysis.contact.portfolio} target="_blank" rel="noopener noreferrer" className="hover:underline text-[var(--color-amber)]">
+                      🌐 Website
+                    </a>
+                  )}
                 </div>
               )}
             </div>
           </div>
 
+          {/* Stats Section */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-4">
             <GutterCard gutter="green">
               <p className="text-xs text-[var(--color-text-muted)]">LeetCode solved</p>
@@ -219,7 +237,7 @@ export function Portfolio() {
                 {data.resumeAnalysis.skills.map((skill) => (
                   <span
                     key={skill}
-                    className="rounded-md bg-[var(--color-ink-panel-raised)] border border-[var(--color-ink-border)] px-2.5 py-1 text-xs text-[var(--color-text)]"
+                    className="rounded-md bg-[var(--color-ink-panel-raised)] border border-[var(--color-ink-border)] px-2.5 py-1 text-xs text-[var(--color-text)] font-medium"
                   >
                     {skill}
                   </span>
@@ -237,7 +255,7 @@ export function Portfolio() {
                   <div key={i} className="relative space-y-0.5">
                     <div className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-[var(--color-amber)]" />
                     <h4 className="text-sm font-semibold text-[var(--color-text)]">{exp.role}</h4>
-                    <p className="text-xs text-[var(--color-amber)]">{exp.company} · {exp.duration}</p>
+                    <p className="text-xs text-[var(--color-amber)] font-medium">{exp.company} · {exp.duration}</p>
                     <p className="text-xs text-[var(--color-text-muted)] leading-relaxed whitespace-pre-wrap mt-1">
                       {exp.description}
                     </p>
@@ -247,7 +265,49 @@ export function Portfolio() {
             </GutterCard>
           )}
 
-          {/* Education & Projects */}
+          {/* Resume Projects Section */}
+          {((data.resumeAnalysis?.projects && data.resumeAnalysis.projects.length > 0) || (data.github?.topRepos && data.github.topRepos.length > 0)) && (
+            <GutterCard gutter="amber">
+              <h3 className="font-display text-sm font-semibold mb-3">Featured Projects</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {data.resumeAnalysis?.projects?.map((proj, i) => (
+                  <div key={`res-${i}`} className="rounded-lg border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] p-3.5 space-y-2">
+                    <h4 className="text-xs font-semibold text-[var(--color-text)]">{proj.title}</h4>
+                    <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">{proj.description}</p>
+                    {proj.tech && proj.tech.length > 0 && (
+                      <div className="flex flex-wrap gap-1 pt-1">
+                        {proj.tech.map((t) => (
+                          <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-ink-panel)] border border-[var(--color-ink-border)] text-[var(--color-amber)]">
+                            {t}
+                          </span>
+                        ))}
+                      </div>
+                    )}
+                  </div>
+                ))}
+                {data.github?.topRepos?.map((repo) => (
+                  <a
+                    key={repo.name}
+                    href={repo.url}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="rounded-lg border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] p-3.5 space-y-2 hover:border-[var(--color-amber)] transition-colors"
+                  >
+                    <div className="flex items-center justify-between">
+                      <h4 className="text-xs font-semibold text-[var(--color-text)]">{repo.name}</h4>
+                      <span className="text-[9px] px-1.5 py-0.5 rounded bg-[var(--color-amber)] text-black font-semibold">GitHub</span>
+                    </div>
+                    <p className="text-xs text-[var(--color-text-muted)] line-clamp-2">{repo.description || 'GitHub Repository'}</p>
+                    <div className="text-[10px] text-[var(--color-amber)]">
+                      {repo.language && <span>{repo.language} · </span>}★ {repo.stars}
+                    </div>
+                  </a>
+                ))}
+              </div>
+            </GutterCard>
+          )}
+
+          {/* Education & Certifications */}
           {data.resumeAnalysis?.education && data.resumeAnalysis.education.length > 0 && (
             <GutterCard gutter="muted">
               <h3 className="font-display text-sm font-semibold mb-3">Education</h3>
@@ -256,6 +316,22 @@ export function Portfolio() {
                   <div key={i} className="rounded-lg border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] p-3 space-y-1">
                     <p className="text-xs font-semibold text-[var(--color-text)]">{edu.degree}</p>
                     <p className="text-xs text-[var(--color-text-muted)]">{edu.school} ({edu.duration})</p>
+                    {edu.score && <p className="text-[10px] text-[var(--color-amber)] font-medium">Score / GPA: {edu.score}</p>}
+                  </div>
+                ))}
+              </div>
+            </GutterCard>
+          )}
+
+          {data.resumeAnalysis?.certifications && data.resumeAnalysis.certifications.length > 0 && (
+            <GutterCard gutter="green">
+              <h3 className="font-display text-sm font-semibold mb-3">Certifications</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {data.resumeAnalysis.certifications.map((cert, i) => (
+                  <div key={i} className="rounded-lg border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] p-3 space-y-1">
+                    <p className="text-xs font-semibold text-[var(--color-text)]">📜 {cert.name}</p>
+                    {cert.authority && <p className="text-xs text-[var(--color-amber)]">{cert.authority}</p>}
+                    {cert.date && <p className="text-[10px] text-[var(--color-text-faint)]">Issued: {cert.date}</p>}
                   </div>
                 ))}
               </div>
@@ -264,7 +340,7 @@ export function Portfolio() {
 
           {data.featuredSnippets.length > 0 && (
             <GutterCard gutter="amber">
-              <h3 className="font-display text-sm font-semibold mb-3">Featured snippets</h3>
+              <h3 className="font-display text-sm font-semibold mb-3">Featured Snippets</h3>
               <div className="flex flex-wrap gap-2">
                 {data.featuredSnippets.map((s) => (
                   <span
