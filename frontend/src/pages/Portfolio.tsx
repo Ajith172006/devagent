@@ -154,7 +154,44 @@ export function Portfolio() {
       )}
 
       {data && (
-        <div className="space-y-4">
+        <div className="space-y-5">
+          {/* Profile Header Card */}
+          <div className="rounded-xl border border-[var(--color-ink-border)] bg-[var(--color-ink-panel)] p-6 flex flex-col md:flex-row items-start md:items-center gap-5">
+            {data.user?.photoUrl || photoUrl ? (
+              <img
+                src={data.user?.photoUrl || photoUrl}
+                alt="Profile"
+                className="h-20 w-20 rounded-full ring-2 ring-[var(--color-amber)] object-cover flex-shrink-0"
+              />
+            ) : (
+              <div className="h-20 w-20 rounded-full bg-[var(--color-ink-panel-raised)] border border-[var(--color-ink-border)] flex items-center justify-center text-2xl flex-shrink-0">
+                👤
+              </div>
+            )}
+            <div className="space-y-1">
+              <h2 className="text-xl font-bold font-display text-[var(--color-text)]">
+                {displayName || data.user?.name || 'Developer'}
+              </h2>
+              {(data.user?.profession || data.resumeAnalysis?.profession) && (
+                <p className="text-sm font-semibold text-[var(--color-amber)]">
+                  {data.user?.profession || data.resumeAnalysis?.profession}
+                </p>
+              )}
+              {(data.resumeAnalysis?.summary || data.github?.profile?.bio) && (
+                <p className="text-xs text-[var(--color-text-muted)] max-w-2xl leading-relaxed mt-1">
+                  {data.resumeAnalysis?.summary || data.github?.profile?.bio}
+                </p>
+              )}
+              {data.resumeAnalysis?.contact && (
+                <div className="flex flex-wrap gap-3 text-xs text-[var(--color-text-faint)] pt-1">
+                  {data.resumeAnalysis.contact.email && <span>📧 {data.resumeAnalysis.contact.email}</span>}
+                  {data.resumeAnalysis.contact.location && <span>📍 {data.resumeAnalysis.contact.location}</span>}
+                  {data.resumeAnalysis.contact.linkedin && <span>🔗 {data.resumeAnalysis.contact.linkedin}</span>}
+                </div>
+              )}
+            </div>
+          </div>
+
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 md:grid-cols-4">
             <GutterCard gutter="green">
               <p className="text-xs text-[var(--color-text-muted)]">LeetCode solved</p>
@@ -173,6 +210,57 @@ export function Portfolio() {
               <p className="font-data text-xl font-semibold">{data.featuredSnippets.length}</p>
             </GutterCard>
           </div>
+
+          {/* Resume Skills Section */}
+          {data.resumeAnalysis?.skills && data.resumeAnalysis.skills.length > 0 && (
+            <GutterCard gutter="amber">
+              <h3 className="font-display text-sm font-semibold mb-3">Skills & Technologies</h3>
+              <div className="flex flex-wrap gap-1.5">
+                {data.resumeAnalysis.skills.map((skill) => (
+                  <span
+                    key={skill}
+                    className="rounded-md bg-[var(--color-ink-panel-raised)] border border-[var(--color-ink-border)] px-2.5 py-1 text-xs text-[var(--color-text)]"
+                  >
+                    {skill}
+                  </span>
+                ))}
+              </div>
+            </GutterCard>
+          )}
+
+          {/* Resume Work Experience Timeline */}
+          {data.resumeAnalysis?.experience && data.resumeAnalysis.experience.length > 0 && (
+            <GutterCard gutter="green">
+              <h3 className="font-display text-sm font-semibold mb-4">Work Experience</h3>
+              <div className="space-y-4 border-l border-[var(--color-ink-border)] pl-4">
+                {data.resumeAnalysis.experience.map((exp, i) => (
+                  <div key={i} className="relative space-y-0.5">
+                    <div className="absolute -left-[21px] top-1.5 h-2.5 w-2.5 rounded-full bg-[var(--color-amber)]" />
+                    <h4 className="text-sm font-semibold text-[var(--color-text)]">{exp.role}</h4>
+                    <p className="text-xs text-[var(--color-amber)]">{exp.company} · {exp.duration}</p>
+                    <p className="text-xs text-[var(--color-text-muted)] leading-relaxed whitespace-pre-wrap mt-1">
+                      {exp.description}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </GutterCard>
+          )}
+
+          {/* Education & Projects */}
+          {data.resumeAnalysis?.education && data.resumeAnalysis.education.length > 0 && (
+            <GutterCard gutter="muted">
+              <h3 className="font-display text-sm font-semibold mb-3">Education</h3>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {data.resumeAnalysis.education.map((edu, i) => (
+                  <div key={i} className="rounded-lg border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] p-3 space-y-1">
+                    <p className="text-xs font-semibold text-[var(--color-text)]">{edu.degree}</p>
+                    <p className="text-xs text-[var(--color-text-muted)]">{edu.school} ({edu.duration})</p>
+                  </div>
+                ))}
+              </div>
+            </GutterCard>
+          )}
 
           {data.featuredSnippets.length > 0 && (
             <GutterCard gutter="amber">

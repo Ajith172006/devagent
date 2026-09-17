@@ -2,13 +2,19 @@ package com.devagent.users;
 
 import com.devagent.ai.AiService;
 import com.devagent.users.dto.UpsertUserRequest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.springframework.web.server.ResponseStatusException;
+
 import java.util.List;
+import java.util.Objects;
 
 @Service
 public class UsersService {
+
+    private static final Logger log = LoggerFactory.getLogger(UsersService.class);
 
     private final UserRepository repo;
     private final AiService aiService;
@@ -24,7 +30,7 @@ public class UsersService {
             user = new User();
             user.setId(uid);
         }
-        user.setName(req.getName());
+        if (req.getName() != null) user.setName(req.getName());
         if (req.getProfession() != null) user.setProfession(req.getProfession());
         if (req.getAge() != null) user.setAge(req.getAge());
         if (req.getGender() != null) user.setGender(req.getGender());
@@ -32,15 +38,17 @@ public class UsersService {
         if (req.getPhotoUrl() != null) user.setPhotoUrl(req.getPhotoUrl());
 
         boolean resumeChanged = req.getResumeText() != null
-                && !req.getResumeText().equals(user.getResumeText());
+                && !Objects.equals(req.getResumeText(), user.getResumeText());
         boolean forceAnalyze = Boolean.TRUE.equals(req.getForceAnalyze());
 
         if (req.getResumeText() != null) user.setResumeText(req.getResumeText());
 
-        if ((resumeChanged || forceAnalyze) && user.getResumeText() != null) {
+        if ((resumeChanged || forceAnalyze) && user.getResumeText() != null && !user.getResumeText().isBlank()) {
             try {
                 user.setResumeAnalysis(aiService.analyzeResume(user.getResumeText()));
-            } catch (Exception ignored) {}
+            } catch (Exception e) {
+                log.warn("Failed to analyze resume for user {}: {}", uid, e.getMessage());
+            }
         }
         return repo.save(user);
     }

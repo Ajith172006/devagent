@@ -92,6 +92,41 @@ export interface GithubSummary {
 
 export interface PortfolioData {
   generatedAt: string;
+  user?: {
+    name?: string;
+    profession?: string;
+    photoUrl?: string;
+    email?: string;
+  } | null;
+  resumeAnalysis?: {
+    name?: string;
+    profession?: string;
+    summary?: string;
+    skills?: string[];
+    experience?: Array<{
+      role: string;
+      company: string;
+      duration: string;
+      description: string;
+    }>;
+    education?: Array<{
+      degree: string;
+      school: string;
+      duration: string;
+    }>;
+    projects?: Array<{
+      title: string;
+      description: string;
+      tech?: string[];
+    }>;
+    contact?: {
+      email?: string;
+      phone?: string;
+      location?: string;
+      github?: string;
+      linkedin?: string;
+    };
+  } | null;
   github: GithubSummary | null;
   leetcode: LeetcodeStats;
   streak: Streak;

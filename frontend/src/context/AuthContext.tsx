@@ -33,21 +33,16 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [loading, setLoading] = useState(firebaseConfigured);
 
   useEffect(() => {
-    if (!firebaseConfigured || !auth) { setLoading(false); return; }
-
-    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
-      setUser(firebaseUser);
-      // Inject UID into every API request
-      setCurrentUserId(firebaseUser?.uid ?? null);
-
-      if (firebaseUser) {
-        const stored = localStorage.getItem(PROFILE_KEY);
-        if (stored) {
-          try {
-            setProfile(JSON.parse(stored) as UserProfile);
-          } catch {}
-        }
-        usersApi.me().then((data) => {
+    const fetchLocalOrBackendProfile = async () => {
+      const stored = localStorage.getItem(PROFILE_KEY);
+      if (stored) {
+        try {
+          setProfile(JSON.parse(stored) as UserProfile);
+        } catch {}
+      }
+      try {
+        const data = await usersApi.me();
+        if (data) {
           const dbProfile: UserProfile = {
             name: data.name || '',
             profession: data.profession || '',
@@ -58,7 +53,24 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           };
           localStorage.setItem(PROFILE_KEY, JSON.stringify(dbProfile));
           setProfile(dbProfile);
-        }).catch(console.error);
+        }
+      } catch (err) {
+        console.warn('Could not fetch user profile from backend:', err);
+      }
+    };
+
+    if (!firebaseConfigured || !auth) {
+      fetchLocalOrBackendProfile().finally(() => setLoading(false));
+      return;
+    }
+
+    const unsub = onAuthStateChanged(auth, (firebaseUser) => {
+      setUser(firebaseUser);
+      // Inject UID into every API request
+      setCurrentUserId(firebaseUser?.uid ?? null);
+
+      if (firebaseUser) {
+        fetchLocalOrBackendProfile();
       } else {
         setProfile(null);
       }
@@ -68,15 +80,14 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   }, []);
 
   const saveProfile = async (p: UserProfile, forceAnalyze?: boolean) => {
-    if (!user) return;
     // Persist to localStorage immediately so the UI updates
     localStorage.setItem(PROFILE_KEY, JSON.stringify(p));
     setProfile(p);
-    // Sync to backend — creates/updates the user row keyed by Firebase UID
+    // Sync to backend — creates/updates the user row keyed by Firebase UID or dev-local-user
     await usersApi.upsert({
       ...p,
-      email: user.email ?? undefined,
-      photoUrl: p.photoUrl || user.photoURL || undefined,
+      email: user?.email ?? undefined,
+      photoUrl: p.photoUrl || user?.photoURL || undefined,
       forceAnalyze,
     });
   };
