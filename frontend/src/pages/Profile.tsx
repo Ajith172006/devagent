@@ -86,9 +86,6 @@ export function Profile() {
 
   // Use local if available, fall back to context
   const displayResume = localResume || ctxResume;
-  const [message, setMessage] = useState('');
-  const [resumeReady, setResumeReady] = useState(false);
-  const [resumeChanged, setResumeChanged] = useState(false);
 
   // Load form from backend on mount
   useEffect(() => {
