@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAuth } from '../context/AuthContext';
 import { usersApi } from '../api/modules';
-import { UserCircle } from 'lucide-react';
+import { UserCircle, Upload, RefreshCw, CheckCircle } from 'lucide-react';
 
 const PROFESSIONS = [
   'Frontend Developer', 'Backend Developer', 'Full-Stack Developer',
@@ -9,107 +9,80 @@ const PROFESSIONS = [
   'Student', 'Other',
 ];
 
-// PDF.js Helper Functions
-const loadPdfJs = (): Promise<any> => {
-  return new Promise((resolve, reject) => {
-    if ((window as any).pdfjsLib) {
-      resolve((window as any).pdfjsLib);
-      return;
-    }
-    const script = document.createElement('script');
-    script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
-    script.onload = () => {
-      const pdfjsLib = (window as any).pdfjsLib;
-      pdfjsLib.GlobalWorkerOptions.workerSrc = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
-      resolve(pdfjsLib);
-    };
-    script.onerror = () => reject(new Error('Failed to load PDF.js'));
-    document.head.appendChild(script);
-  });
-};
+// ── PDF helpers ──────────────────────────────────────────────────────────────
 
-const dataUrlToArrayBuffer = (dataUrl: string): ArrayBuffer => {
-  const base64 = dataUrl.split(',')[1];
-  const binary = atob(base64);
-  const len = binary.length;
-  const bytes = new Uint8Array(len);
-  for (let i = 0; i < len; i++) {
-    bytes[i] = binary.charCodeAt(i);
-  }
-  return bytes.buffer;
-};
+const loadPdfJs = (): Promise<any> => new Promise((resolve, reject) => {
+  if ((window as any).pdfjsLib) { resolve((window as any).pdfjsLib); return; }
+  const s = document.createElement('script');
+  s.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
+  s.onload = () => {
+    const lib = (window as any).pdfjsLib;
+    lib.GlobalWorkerOptions.workerSrc =
+      'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
+    resolve(lib);
+  };
+  s.onerror = () => reject(new Error('Failed to load PDF.js'));
+  document.head.appendChild(s);
+});
 
-const extractImagesFromPdf = async (arrayBuffer: ArrayBuffer): Promise<string[]> => {
-  const pdfjsLib = await loadPdfJs();
-  const pdf = await pdfjsLib.getDocument({ data: arrayBuffer }).promise;
-  const validImages: { dataUrl: string; area: number }[] = [];
-
-  if (pdf.numPages > 0) {
+const extractImageFromPdf = async (dataUrl: string): Promise<string> => {
+  try {
+    const lib = await loadPdfJs();
+    const base64 = dataUrl.split(',')[1];
+    const bin = atob(base64);
+    const bytes = new Uint8Array(bin.length);
+    for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+    const pdf = await lib.getDocument({ data: bytes.buffer }).promise;
     const page = await pdf.getPage(1);
-    const operatorList = await page.getOperatorList();
-
-    for (let i = 0; i < operatorList.fnArray.length; i++) {
-      const fn = operatorList.fnArray[i];
-      if (fn === pdfjsLib.OPS.paintImageXObject || fn === pdfjsLib.OPS.paintJpegXObject) {
-        const args = operatorList.argsArray[i];
-        const imageId = args[0];
+    const ops = await page.getOperatorList();
+    const imgs: { dataUrl: string; area: number }[] = [];
+    for (let i = 0; i < ops.fnArray.length; i++) {
+      const fn = ops.fnArray[i];
+      if (fn === lib.OPS.paintImageXObject || fn === lib.OPS.paintJpegXObject) {
+        const id = ops.argsArray[i][0];
         try {
-          const img = page.objs.get(imageId) || page.commonObjs.get(imageId);
-          if (img && img.width && img.height && img.data) {
-            const canvas = document.createElement('canvas');
-            canvas.width = img.width;
-            canvas.height = img.height;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              const imageData = ctx.createImageData(img.width, img.height);
-              if (img.data.length === img.width * img.height * 3) {
-                let srcIdx = 0;
-                let dstIdx = 0;
-                for (let p = 0; p < img.width * img.height; p++) {
-                  imageData.data[dstIdx] = img.data[srcIdx];
-                  imageData.data[dstIdx + 1] = img.data[srcIdx + 1];
-                  imageData.data[dstIdx + 2] = img.data[srcIdx + 2];
-                  imageData.data[dstIdx + 3] = 255;
-                  srcIdx += 3;
-                  dstIdx += 4;
-                }
-              } else if (img.data.length === img.width * img.height * 4) {
-                imageData.data.set(img.data);
-              } else {
-                continue;
+          const img = page.objs.get(id) || page.commonObjs.get(id);
+          if (img?.width && img?.height && img?.data) {
+            const c = document.createElement('canvas');
+            c.width = img.width; c.height = img.height;
+            const ctx = c.getContext('2d')!;
+            const id2 = ctx.createImageData(img.width, img.height);
+            if (img.data.length === img.width * img.height * 3) {
+              let s2 = 0, d = 0;
+              for (let p = 0; p < img.width * img.height; p++) {
+                id2.data[d] = img.data[s2]; id2.data[d+1] = img.data[s2+1];
+                id2.data[d+2] = img.data[s2+2]; id2.data[d+3] = 255;
+                s2 += 3; d += 4;
               }
-              ctx.putImageData(imageData, 0, 0);
-              const dataUrl = canvas.toDataURL('image/jpeg');
-              validImages.push({ dataUrl, area: img.width * img.height });
-            }
+            } else if (img.data.length === img.width * img.height * 4) {
+              id2.data.set(img.data);
+            } else continue;
+            ctx.putImageData(id2, 0, 0);
+            imgs.push({ dataUrl: c.toDataURL('image/jpeg'), area: img.width * img.height });
           }
-        } catch (e) {
-          console.error('Error extracting image object:', e);
-        }
+        } catch {}
       }
     }
-  }
-
-  validImages.sort((a, b) => b.area - a.area);
-  return validImages.filter(img => img.area >= 2500).map(img => img.dataUrl);
+    imgs.sort((a, b) => b.area - a.area);
+    return imgs.find(i => i.area >= 2500)?.dataUrl || '';
+  } catch { return ''; }
 };
 
+// ── Main component ────────────────────────────────────────────────────────────
+
 export function Profile() {
-  const { user, saveProfile } = useAuth();
+  const { user, resumeAnalysis: ctxResume, saveProfile, refreshResumeAnalysis } = useAuth();
+
   const [form, setForm] = useState({
-    name: '',
-    profession: '',
-    age: '',
-    gender: '',
-    resumeText: '',
-    photoUrl: '',
+    name: '', profession: '', age: '', gender: '', resumeText: '', photoUrl: '',
   });
-  const [resumeAnalysis, setResumeAnalysis] = useState<any>(null);
   const [errors, setErrors] = useState<Record<string, string>>({});
-  const [saving, setSaving] = useState(false);
+  const [status, setStatus] = useState<'idle' | 'saving' | 'analyzing' | 'done' | 'error'>('idle');
   const [message, setMessage] = useState('');
+  const [resumeReady, setResumeReady] = useState(false);
   const [resumeChanged, setResumeChanged] = useState(false);
 
+  // Load form from backend on mount
   useEffect(() => {
     usersApi.me().then((data) => {
       setForm({
@@ -120,25 +93,20 @@ export function Profile() {
         resumeText: data.resumeText || '',
         photoUrl: data.photoUrl || '',
       });
-      if (data.resumeAnalysis) {
-        try {
-          setResumeAnalysis(JSON.parse(data.resumeAnalysis));
-        } catch {}
-      }
+      if (data.resumeText) setResumeReady(true);
     }).catch(console.error);
   }, []);
 
   const set = (field: string, value: string) => {
-    setForm((f) => ({ ...f, [field]: value }));
-    setErrors((e) => ({ ...e, [field]: '' }));
-    setMessage('');
+    setForm(f => ({ ...f, [field]: value }));
+    setErrors(e => ({ ...e, [field]: '' }));
   };
 
-  const validate = (): boolean => {
+  const validate = () => {
     const errs: Record<string, string> = {};
     if (!form.name.trim()) errs.name = 'Name is required';
     if (!form.profession) errs.profession = 'Select your profession';
-    if (!form.age || isNaN(Number(form.age)) || Number(form.age) < 10 || Number(form.age) > 100)
+    if (!form.age || isNaN(+form.age) || +form.age < 10 || +form.age > 100)
       errs.age = 'Enter a valid age (10–100)';
     if (!form.gender) errs.gender = 'Select your gender';
     setErrors(errs);
@@ -148,297 +116,321 @@ export function Profile() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!validate()) return;
-    
-    setSaving(true);
-    setMessage('');
+    setStatus(resumeChanged ? 'analyzing' : 'saving');
+    setMessage(resumeChanged ? 'Analyzing resume with AI… this takes ~10s' : 'Saving profile…');
     try {
       await saveProfile(form, resumeChanged);
-      const data = await usersApi.me();
-      if (data.resumeAnalysis) {
-        try {
-          setResumeAnalysis(JSON.parse(data.resumeAnalysis));
-        } catch {}
-      }
       setResumeChanged(false);
-      setMessage('Profile and resume updated successfully!');
-    } catch (err) {
-      setMessage('Failed to update profile.');
-    } finally {
-      setSaving(false);
+      setStatus('done');
+      setMessage('Profile saved! Resume analysis updated.');
+    } catch {
+      setStatus('error');
+      setMessage('Failed to save profile.');
     }
   };
 
-  const handleImageUploadFromIcon = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handlePhotoUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      alert('File too large (max 5MB)');
-      return;
-    }
-
-    setSaving(true);
-    setMessage('Uploading profile photo...');
-
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const base64Data = event.target?.result as string;
-
-        const updatedForm = {
-          ...form,
-          photoUrl: base64Data,
-        };
-
-        setForm(updatedForm);
-
-        // Ensure database save succeeds
-        const finalForm = {
-          ...updatedForm,
-          name: updatedForm.name || user?.displayName || 'Developer',
-          profession: updatedForm.profession || 'Full-Stack Developer',
-          age: updatedForm.age || '25',
-          gender: updatedForm.gender || 'Prefer not to say',
-        };
-
-        await saveProfile(finalForm);
-        setMessage('Profile photo updated successfully!');
+    if (file.size > 5 * 1024 * 1024) { alert('Max 5MB'); return; }
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target?.result as string;
+      const updated = { ...form, photoUrl: base64,
+        name: form.name || user?.displayName || 'Developer',
+        profession: form.profession || 'Full-Stack Developer',
+        age: form.age || '25',
+        gender: form.gender || 'Prefer not to say',
       };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      console.error(err);
-      setMessage('Failed to process and upload profile photo.');
-    } finally {
-      setSaving(false);
-    }
+      setForm(updated);
+      try { await saveProfile(updated); } catch {}
+    };
+    reader.readAsDataURL(file);
   };
 
-  const handleBottomResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleResumeUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) {
-      setErrors((prev) => ({ ...prev, resumeText: 'File too large (max 5MB)' }));
-      return;
-    }
-
-    setSaving(true);
-    setMessage('Reading resume PDF...');
-
-    try {
-      const reader = new FileReader();
-      reader.onload = async (event) => {
-        const base64Data = event.target?.result as string;
-
-        let extractedPhotoUrl = '';
-        try {
-          const arrayBuffer = dataUrlToArrayBuffer(base64Data);
-          const images = await extractImagesFromPdf(arrayBuffer);
-          if (images && images.length > 0) {
-            extractedPhotoUrl = images[0];
-          }
-        } catch (err) {
-          console.error('Failed to extract image from PDF:', err);
-        }
-
-        setForm((prev) => ({
-          ...prev,
-          resumeText: base64Data,
-          photoUrl: extractedPhotoUrl || prev.photoUrl,
-        }));
-        setResumeChanged(true);
-        
-        setMessage(extractedPhotoUrl 
-          ? 'Resume loaded and profile photo extracted! Click Save Profile to apply.' 
-          : 'Resume loaded! Click Save Profile to apply.'
-        );
-      };
-      reader.readAsDataURL(file);
-    } catch (err) {
-      console.error(err);
-      setMessage('Failed to process resume.');
-    } finally {
-      setSaving(false);
-    }
+    if (file.size > 5 * 1024 * 1024) { setErrors(v => ({ ...v, resume: 'Max 5MB' })); return; }
+    setStatus('saving');
+    setMessage('Reading PDF…');
+    const reader = new FileReader();
+    reader.onload = async (ev) => {
+      const base64 = ev.target?.result as string;
+      const extracted = await extractImageFromPdf(base64);
+      setForm(prev => ({
+        ...prev,
+        resumeText: base64,
+        photoUrl: extracted || prev.photoUrl,
+      }));
+      setResumeReady(true);
+      setResumeChanged(true);
+      setStatus('idle');
+      setMessage(extracted
+        ? '✓ Resume loaded, profile photo extracted. Click Save Profile to analyze.'
+        : '✓ Resume loaded. Click Save Profile to analyze with AI.');
+    };
+    reader.readAsDataURL(file);
   };
+
+  const isBusy = status === 'saving' || status === 'analyzing';
 
   return (
-    <div className="mx-auto max-w-2xl space-y-6">
-      <div className="flex items-center gap-6 border-b border-[var(--color-ink-border)] pb-6">
+    <div className="mx-auto max-w-2xl space-y-8">
+
+      {/* ── Avatar + name header ── */}
+      <div className="flex items-center gap-5 border-b border-[var(--color-ink-border)] pb-6">
         <div className="relative group cursor-pointer h-20 w-20 flex-shrink-0">
           {form.photoUrl || user?.photoURL ? (
-            <img 
-              src={form.photoUrl || user?.photoURL || undefined} 
-              alt="Profile" 
-              className="h-20 w-20 rounded-full ring-2 ring-[var(--color-amber)] object-cover" 
-            />
+            <img src={form.photoUrl || user?.photoURL || undefined} alt="Profile"
+              className="h-20 w-20 rounded-full ring-2 ring-[var(--color-amber)] object-cover" />
           ) : (
-            <UserCircle size={80} className="text-[var(--color-text-muted)] h-20 w-20" />
+            <UserCircle size={80} className="text-[var(--color-text-muted)]" />
           )}
-          {/* Overlay Upload Button / Loading Spinner */}
-          <div className="absolute inset-0 bg-black/70 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-            {saving ? (
-              <span className="h-5 w-5 animate-spin rounded-full border-2 border-[var(--color-ink-border)] border-t-[var(--color-amber)]" />
-            ) : (
-              <>
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white mb-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12" />
-                </svg>
-                <span className="text-[8px] text-white font-semibold text-center leading-tight">Upload<br/>Photo</span>
-              </>
-            )}
+          <div className="absolute inset-0 bg-black/70 rounded-full flex flex-col items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+            <Upload size={18} className="text-white mb-0.5" />
+            <span className="text-[8px] text-white font-semibold">Upload Photo</span>
           </div>
-          {!saving && (
-            <input
-              type="file"
-              accept="image/*"
-              className="absolute inset-0 opacity-0 cursor-pointer"
-              onChange={handleImageUploadFromIcon}
-              title="Upload Profile Photo"
-            />
-          )}
+          <input type="file" accept="image/*" className="absolute inset-0 opacity-0 cursor-pointer"
+            onChange={handlePhotoUpload} />
         </div>
         <div>
           <h2 className="text-2xl font-semibold font-display">{form.name || 'Your Profile'}</h2>
-          <p className="text-[var(--color-text-muted)]">{user?.email}</p>
-          <p className="text-xs text-[var(--color-text-faint)] mt-1">Hover over your profile photo to upload a custom image</p>
+          <p className="text-sm text-[var(--color-text-muted)]">{user?.email}</p>
         </div>
       </div>
 
-      <form onSubmit={handleSubmit} className="space-y-6" noValidate>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {/* Name */}
+      {/* ── Profile form ── */}
+      <form onSubmit={handleSubmit} className="space-y-5" noValidate>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           <Field label="Display name" error={errors.name}>
-            <input
-              type="text"
-              value={form.name}
-              onChange={(e) => set('name', e.target.value)}
-              className={inputCls(!!errors.name)}
-            />
+            <input type="text" value={form.name}
+              onChange={e => set('name', e.target.value)} className={inputCls(!!errors.name)} />
           </Field>
-
-          {/* Profession */}
           <Field label="Profession" error={errors.profession}>
-            <select
-              value={form.profession}
-              onChange={(e) => set('profession', e.target.value)}
-              className={inputCls(!!errors.profession)}
-            >
+            <select value={form.profession}
+              onChange={e => set('profession', e.target.value)} className={inputCls(!!errors.profession)}>
               <option value="">Select your role…</option>
-              {PROFESSIONS.map((p) => <option key={p} value={p}>{p}</option>)}
+              {PROFESSIONS.map(p => <option key={p} value={p}>{p}</option>)}
             </select>
           </Field>
-
-          {/* Age */}
           <Field label="Age" error={errors.age}>
-            <input
-              type="number"
-              value={form.age}
-              onChange={(e) => set('age', e.target.value)}
-              min={10} max={100}
-              className={inputCls(!!errors.age)}
-            />
+            <input type="number" value={form.age} min={10} max={100}
+              onChange={e => set('age', e.target.value)} className={inputCls(!!errors.age)} />
           </Field>
-
-          {/* Gender */}
           <Field label="Gender" error={errors.gender}>
-            <div className="flex gap-3 flex-wrap h-10 items-center">
-              {['Male', 'Female', 'Non-binary', 'Prefer not to say'].map((g) => (
+            <div className="flex gap-3 flex-wrap items-center h-10">
+              {['Male', 'Female', 'Non-binary', 'Prefer not to say'].map(g => (
                 <label key={g} className="flex cursor-pointer items-center gap-1.5 text-sm">
-                  <input
-                    type="radio"
-                    name="gender"
-                    value={g}
-                    checked={form.gender === g}
-                    onChange={() => set('gender', g)}
-                    className="accent-[var(--color-amber)]"
-                  />
+                  <input type="radio" name="gender" value={g} checked={form.gender === g}
+                    onChange={() => set('gender', g)} className="accent-[var(--color-amber)]" />
                   {g}
                 </label>
               ))}
             </div>
-            {errors.gender && <p className="mt-1 text-xs text-[var(--color-diff-red)]">{errors.gender}</p>}
+            {errors.gender && <p className="text-xs text-[var(--color-diff-red)]">{errors.gender}</p>}
           </Field>
         </div>
-        <div className="pt-4 border-t border-[var(--color-ink-border)]">
-          <Field label="Resume (PDF format only)" error={errors.resumeText}>
-            <input
-              type="file"
-              accept=".pdf"
-              onChange={handleBottomResumeUpload}
-              className="block w-full text-sm text-[var(--color-text-muted)] profile-file-input cursor-pointer"
-            />
-            {form.resumeText && form.resumeText.startsWith('data:') && (
-              <p className="mt-2 text-xs text-[var(--color-diff-green)]">✓ Resume PDF attached and ready to be analyzed.</p>
+
+        {/* Resume upload */}
+        <div className="border-t border-[var(--color-ink-border)] pt-5">
+          <label className="block text-sm font-medium text-[var(--color-text-muted)] mb-1.5">
+            Resume <span className="text-[var(--color-text-faint)] font-normal">(PDF — AI will extract all details)</span>
+          </label>
+          <div className="flex items-center gap-3">
+            <label className="flex items-center gap-2 cursor-pointer rounded-lg border border-dashed border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] px-4 py-2.5 text-sm text-[var(--color-text-muted)] hover:border-[var(--color-amber)] hover:text-[var(--color-text)] transition-colors">
+              <Upload size={15} />
+              {resumeReady ? 'Replace resume PDF' : 'Upload resume PDF'}
+              <input type="file" accept=".pdf" className="hidden" onChange={handleResumeUpload} />
+            </label>
+            {resumeReady && (
+              <span className="flex items-center gap-1.5 text-xs text-[var(--color-diff-green)]">
+                <CheckCircle size={13} /> Resume attached
+              </span>
             )}
-          </Field>
+          </div>
+          {resumeChanged && (
+            <p className="mt-1.5 text-xs text-[var(--color-amber)]">
+              ⚠ New resume detected — click Save Profile to run AI analysis
+            </p>
+          )}
         </div>
- 
-        <div className="flex items-center gap-4 pt-4">
-          <button
-            type="submit"
-            disabled={saving}
-            className="rounded-lg btn-dynamic-gradient px-6 py-2.5 text-sm font-semibold disabled:opacity-50"
-          >
-            {saving ? 'Analyzing & Saving...' : 'Save Profile'}
+
+        {/* Save button */}
+        <div className="flex items-center gap-4 pt-2">
+          <button type="submit" disabled={isBusy}
+            className="flex items-center gap-2 rounded-lg bg-[var(--color-amber)] px-5 py-2.5 text-sm font-semibold text-[var(--color-ink)] hover:opacity-90 disabled:opacity-50 transition-opacity">
+            {status === 'analyzing' && <span className="h-4 w-4 animate-spin rounded-full border-2 border-[var(--color-ink)] border-t-transparent" />}
+            {status === 'analyzing' ? 'Analyzing with AI…' : isBusy ? 'Saving…' : 'Save Profile'}
           </button>
-          {message && <span className="text-sm text-[var(--color-diff-green)]">{message}</span>}
+          {message && (
+            <span className={`text-xs ${status === 'error' ? 'text-[var(--color-diff-red)]' : 'text-[var(--color-diff-green)]'}`}>
+              {message}
+            </span>
+          )}
         </div>
       </form>
 
-      {resumeAnalysis && (
-        <div className="rounded-xl border border-[var(--color-ink-border)] bg-[var(--color-ink-panel)] p-6 space-y-4">
-          <h3 className="font-display text-base font-semibold text-[var(--color-amber)]">AI Resume Analysis Result</h3>
-          
-          {resumeAnalysis.summary && (
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Extracted Summary</h4>
-              <p className="text-sm mt-1 text-[var(--color-text)] leading-relaxed">{resumeAnalysis.summary}</p>
-            </div>
-          )}
+      {/* ── Resume Analysis Preview ── */}
+      {ctxResume && <ResumePreview resume={ctxResume} onRefresh={refreshResumeAnalysis} />}
+    </div>
+  );
+}
 
-          {resumeAnalysis.skills && resumeAnalysis.skills.length > 0 && (
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Extracted Skills</h4>
-              <div className="flex flex-wrap gap-1.5 mt-2">
-                {resumeAnalysis.skills.map((s: string) => (
-                  <span key={s} className="rounded bg-[var(--color-ink-panel-raised)] px-2.5 py-1 text-xs text-[var(--color-text)] border border-[var(--color-ink-border)]">
-                    {s}
-                  </span>
-                ))}
-              </div>
-            </div>
-          )}
+// ── ResumePreview component ──────────────────────────────────────────────────
 
-          {resumeAnalysis.experience && resumeAnalysis.experience.length > 0 && (
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Experience Timeline</h4>
-              <div className="mt-3 space-y-4">
-                {resumeAnalysis.experience.map((exp: any, index: number) => (
-                  <div key={index} className="border-l border-[var(--color-ink-border)] pl-4 py-1 relative">
-                    <div className="absolute left-[-4.5px] top-2.5 w-2.5 h-2.5 rounded-full bg-[var(--color-amber)]" />
-                    <h5 className="text-sm font-semibold text-[var(--color-text)]">{exp.role}</h5>
-                    <p className="text-xs text-[var(--color-text-muted)]">{exp.company} · {exp.duration}</p>
-                    <p className="text-xs text-[var(--color-text-muted)] mt-1 whitespace-pre-wrap">{exp.description}</p>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+function ResumePreview({ resume, onRefresh }: {
+  resume: NonNullable<ReturnType<typeof useAuth>['resumeAnalysis']>;
+  onRefresh: () => Promise<void>;
+}) {
+  const [refreshing, setRefreshing] = useState(false);
+  const refresh = async () => {
+    setRefreshing(true);
+    await onRefresh();
+    setRefreshing(false);
+  };
 
-          {resumeAnalysis.education && resumeAnalysis.education.length > 0 && (
-            <div>
-              <h4 className="text-xs font-semibold uppercase tracking-wider text-[var(--color-text-muted)]">Education</h4>
-              <div className="mt-2 space-y-2">
-                {resumeAnalysis.education.map((edu: any, index: number) => (
-                  <div key={index} className="text-xs">
-                    <span className="font-semibold text-[var(--color-text)]">{edu.degree}</span>
-                    <span className="text-[var(--color-text-muted)]"> — {edu.school} ({edu.duration})</span>
-                  </div>
-                ))}
-              </div>
-            </div>
-          )}
+  return (
+    <div className="rounded-xl border border-[var(--color-ink-border)] bg-[var(--color-ink-panel)] overflow-hidden">
+      {/* Header */}
+      <div className="flex items-center justify-between px-5 py-4 border-b border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)]">
+        <div>
+          <h3 className="font-display text-sm font-semibold text-[var(--color-amber)]">
+            AI Resume Analysis
+          </h3>
+          <p className="text-xs text-[var(--color-text-faint)] mt-0.5">
+            Extracted from your uploaded PDF — auto-fills your portfolio
+          </p>
         </div>
-      )}
+        <button onClick={refresh} disabled={refreshing}
+          className="flex items-center gap-1.5 rounded-md border border-[var(--color-ink-border)] px-2.5 py-1.5 text-xs text-[var(--color-text-muted)] hover:border-[var(--color-amber)] hover:text-[var(--color-text)] transition-colors disabled:opacity-50">
+          <RefreshCw size={12} className={refreshing ? 'animate-spin' : ''} />
+          Refresh
+        </button>
+      </div>
+
+      <div className="p-5 space-y-6">
+        {/* Identity */}
+        <div className="space-y-1">
+          {resume.name && <p className="text-base font-semibold text-[var(--color-text)]">{resume.name}</p>}
+          {resume.profession && <p className="text-sm text-[var(--color-amber)] font-medium">{resume.profession}</p>}
+          {resume.summary && <p className="text-xs text-[var(--color-text-muted)] leading-relaxed mt-1">{resume.summary}</p>}
+        </div>
+
+        {/* Contact */}
+        {resume.contact && Object.values(resume.contact).some(Boolean) && (
+          <Section title="Contact">
+            <div className="flex flex-wrap gap-x-4 gap-y-1.5 text-xs text-[var(--color-text-muted)]">
+              {resume.contact.email && <span>📧 {resume.contact.email}</span>}
+              {resume.contact.phone && <span>📞 {resume.contact.phone}</span>}
+              {resume.contact.location && <span>📍 {resume.contact.location}</span>}
+              {resume.contact.linkedin && (
+                <a href={resume.contact.linkedin} target="_blank" rel="noopener"
+                  className="text-[var(--color-amber)] hover:underline">🔗 LinkedIn</a>
+              )}
+              {resume.contact.github && (
+                <a href={resume.contact.github} target="_blank" rel="noopener"
+                  className="text-[var(--color-amber)] hover:underline">💻 GitHub</a>
+              )}
+              {resume.contact.portfolio && (
+                <a href={resume.contact.portfolio} target="_blank" rel="noopener"
+                  className="text-[var(--color-amber)] hover:underline">🌐 Website</a>
+              )}
+            </div>
+          </Section>
+        )}
+
+        {/* Skills */}
+        {resume.skills && resume.skills.length > 0 && (
+          <Section title="Skills & Technologies">
+            <div className="flex flex-wrap gap-1.5">
+              {resume.skills.map(s => (
+                <span key={s} className="rounded bg-[var(--color-ink-panel-raised)] border border-[var(--color-ink-border)] px-2.5 py-1 text-xs text-[var(--color-text)]">
+                  {s}
+                </span>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Experience */}
+        {resume.experience && resume.experience.length > 0 && (
+          <Section title="Work Experience">
+            <div className="space-y-4 border-l-2 border-[var(--color-ink-border)] pl-4 ml-1">
+              {resume.experience.map((exp, i) => (
+                <div key={i} className="relative">
+                  <div className="absolute -left-[21px] top-1.5 h-3 w-3 rounded-full bg-[var(--color-amber)]" />
+                  <p className="text-sm font-semibold text-[var(--color-text)]">{exp.role}</p>
+                  <p className="text-xs text-[var(--color-amber)] font-medium">{exp.company} · {exp.duration}</p>
+                  <p className="text-xs text-[var(--color-text-muted)] mt-1 leading-relaxed whitespace-pre-wrap">{exp.description}</p>
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Projects */}
+        {resume.projects && resume.projects.length > 0 && (
+          <Section title="Projects">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+              {resume.projects.map((p, i) => (
+                <div key={i} className="rounded-lg border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] p-3 space-y-1.5">
+                  <p className="text-xs font-semibold text-[var(--color-text)]">{p.title}</p>
+                  <p className="text-xs text-[var(--color-text-muted)] leading-relaxed">{p.description}</p>
+                  {p.tech && p.tech.length > 0 && (
+                    <div className="flex flex-wrap gap-1 pt-0.5">
+                      {p.tech.map(t => (
+                        <span key={t} className="text-[10px] px-1.5 py-0.5 rounded bg-[var(--color-ink-panel)] border border-[var(--color-ink-border)] text-[var(--color-amber)]">
+                          {t}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Education */}
+        {resume.education && resume.education.length > 0 && (
+          <Section title="Education">
+            <div className="space-y-2.5">
+              {resume.education.map((edu, i) => (
+                <div key={i} className="rounded-lg border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] px-3.5 py-2.5">
+                  <p className="text-xs font-semibold text-[var(--color-text)]">{edu.degree}</p>
+                  <p className="text-xs text-[var(--color-text-muted)]">{edu.school} · {edu.duration}</p>
+                  {edu.score && <p className="text-[10px] text-[var(--color-amber)] mt-0.5">Score: {edu.score}</p>}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+
+        {/* Certifications */}
+        {resume.certifications && resume.certifications.length > 0 && (
+          <Section title="Certifications">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
+              {resume.certifications.map((c, i) => (
+                <div key={i} className="rounded-lg border border-[var(--color-ink-border)] bg-[var(--color-ink-panel-raised)] px-3.5 py-2.5">
+                  <p className="text-xs font-semibold text-[var(--color-text)]">📜 {c.name}</p>
+                  {c.authority && <p className="text-xs text-[var(--color-amber)]">{c.authority}</p>}
+                  {c.date && <p className="text-[10px] text-[var(--color-text-faint)]">Issued: {c.date}</p>}
+                </div>
+              ))}
+            </div>
+          </Section>
+        )}
+      </div>
+    </div>
+  );
+}
+
+function Section({ title, children }: { title: string; children: React.ReactNode }) {
+  return (
+    <div>
+      <p className="text-[10px] font-bold uppercase tracking-widest text-[var(--color-text-faint)] mb-2">{title}</p>
+      {children}
     </div>
   );
 }
@@ -455,10 +447,10 @@ function Field({ label, error, children }: { label: string; error?: string; chil
 
 function inputCls(hasError: boolean) {
   return [
-    'w-full rounded-lg border bg-black/45 px-4 py-2.5 text-base text-[var(--color-text)]',
-    'placeholder:text-white/40 focus:outline-none focus:ring-1',
+    'w-full rounded-lg border bg-[var(--color-ink-panel-raised)] px-3 py-2.5 text-sm text-[var(--color-text)]',
+    'placeholder:text-[var(--color-text-faint)] focus:outline-none focus:ring-1',
     hasError
       ? 'border-[var(--color-diff-red)] focus:ring-[var(--color-diff-red)]'
-      : 'border-white/20 focus:border-[#3b82f6] focus:ring-[#3b82f6]',
+      : 'border-[var(--color-ink-border)] focus:ring-[var(--color-amber)]',
   ].join(' ');
 }
