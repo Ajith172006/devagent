@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { NavLink, useLocation } from 'react-router-dom';
+import { NavLink, useLocation, useNavigate } from 'react-router-dom';
 import {
   LayoutDashboard,
   Code2,
@@ -12,6 +12,7 @@ import {
   StickyNote,
   LogOut,
   X,
+  UserCircle,
 } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
@@ -25,11 +26,13 @@ const links = [
   { to: '/goals', label: 'Daily Goals', icon: Target },
   { to: '/portfolio', label: 'Portfolio', icon: Globe },
   { to: '/notes', label: 'Notes', icon: StickyNote },
+  { to: '/profile', label: 'Profile', icon: UserCircle },
 ];
 
 export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () => void }) {
   const { user, profile, logout } = useAuth();
   const location = useLocation();
+  const navigate = useNavigate();
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -127,10 +130,13 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
 
         {/* User footer */}
         <div className="border-t border-[var(--color-ink-border)] px-6 py-5 md:px-4 md:py-3 relative z-10">
-          <div className="flex items-center gap-3.5 md:gap-2.5 mb-4 md:mb-2">
-            {user?.photoURL
-              ? <img src={user.photoURL} alt="avatar" className="h-10 w-10 md:h-6 md:w-6 rounded-full" />
-              : <div className="h-10 w-10 md:h-6 md:w-6 rounded-full bg-[var(--color-ink-panel-raised)]" />
+          <button
+            onClick={() => { navigate('/profile'); onClose?.(); }}
+            className="flex items-center gap-3.5 md:gap-2.5 mb-4 md:mb-2 w-full text-left hover:opacity-80 transition-opacity"
+          >
+            {profile?.photoUrl || user?.photoURL
+              ? <img src={profile?.photoUrl || user?.photoURL || undefined} alt="avatar" className="h-10 w-10 md:h-6 md:w-6 rounded-full object-cover ring-1 ring-[var(--color-amber)]" />
+              : <div className="h-10 w-10 md:h-6 md:w-6 rounded-full bg-[var(--color-ink-panel-raised)] flex items-center justify-center"><UserCircle size={16} className="text-[var(--color-text-faint)]" /></div>
             }
             <div className="min-w-0">
               <p className="truncate text-sm md:text-xs font-semibold md:font-medium text-[var(--color-text)]">
@@ -140,7 +146,7 @@ export function Sidebar({ isOpen, onClose }: { isOpen?: boolean; onClose?: () =>
                 {profile?.profession || user?.email || ''}
               </p>
             </div>
-          </div>
+          </button>
           <button
             onClick={logout}
             className="flex w-full items-center gap-2.5 md:gap-2 rounded-md px-3 py-2.5 md:px-2 md:py-1.5 text-sm md:text-xs text-[var(--color-text-faint)] hover:bg-[var(--color-ink-panel-raised)] hover:text-[var(--color-diff-red)] transition-colors"
