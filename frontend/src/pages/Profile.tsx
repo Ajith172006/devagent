@@ -81,6 +81,14 @@ export function Profile() {
   const [message, setMessage] = useState('');
   const [resumeReady, setResumeReady] = useState(false);
   const [resumeChanged, setResumeChanged] = useState(false);
+  // Local resume analysis — updated directly after save (doesn't depend on context timing)
+  const [localResume, setLocalResume] = useState<ReturnType<typeof useAuth>['resumeAnalysis']>(null);
+
+  // Use local if available, fall back to context
+  const displayResume = localResume || ctxResume;
+  const [message, setMessage] = useState('');
+  const [resumeReady, setResumeReady] = useState(false);
+  const [resumeChanged, setResumeChanged] = useState(false);
 
   // Load form from backend on mount
   useEffect(() => {
@@ -94,6 +102,10 @@ export function Profile() {
         photoUrl: data.photoUrl || '',
       });
       if (data.resumeText) setResumeReady(true);
+      // Parse and show resume analysis immediately if available
+      if (data.resumeAnalysis) {
+        try { setLocalResume(JSON.parse(data.resumeAnalysis)); } catch {}
+      }
     }).catch(console.error);
   }, []);
 
@@ -117,12 +129,40 @@ export function Profile() {
     e.preventDefault();
     if (!validate()) return;
     setStatus(resumeChanged ? 'analyzing' : 'saving');
-    setMessage(resumeChanged ? 'Analyzing resume with AI… this takes ~10s' : 'Saving profile…');
+    setMessage(resumeChanged ? 'Analyzing resume with AI… this may take 15–30s' : 'Saving profile…');
     try {
       await saveProfile(form, resumeChanged);
       setResumeChanged(false);
       setStatus('done');
-      setMessage('Profile saved! Resume analysis updated.');
+
+      // Directly fetch fresh data to get the resumeAnalysis right now
+      const fresh = await usersApi.me();
+      if (fresh.resumeAnalysis) {
+        try {
+          const parsed = JSON.parse(fresh.resumeAnalysis);
+          setLocalResume(parsed);
+          setMessage('Profile saved! Resume analysis is ready below ↓');
+        } catch {
+          setMessage('Profile saved! (Could not parse resume analysis)');
+        }
+      } else if (resumeChanged) {
+        // Gemini might still be processing — poll a few times
+        setMessage('Profile saved! Waiting for AI analysis…');
+        for (let i = 0; i < 6; i++) {
+          await new Promise(r => setTimeout(r, 5000));
+          const retry = await usersApi.me();
+          if (retry.resumeAnalysis) {
+            try {
+              const parsed = JSON.parse(retry.resumeAnalysis);
+              setLocalResume(parsed);
+              setMessage('Resume analysis ready ↓');
+              break;
+            } catch {}
+          }
+        }
+      } else {
+        setMessage('Profile saved!');
+      }
     } catch {
       setStatus('error');
       setMessage('Failed to save profile.');
@@ -272,7 +312,13 @@ export function Profile() {
       </form>
 
       {/* ── Resume Analysis Preview ── */}
-      {ctxResume && <ResumePreview resume={ctxResume} onRefresh={refreshResumeAnalysis} />}
+      {displayResume && <ResumePreview resume={displayResume} onRefresh={async () => {
+        await refreshResumeAnalysis();
+        const fresh = await usersApi.me();
+        if (fresh.resumeAnalysis) {
+          try { setLocalResume(JSON.parse(fresh.resumeAnalysis)); } catch {}
+        }
+      }} />}
     </div>
   );
 }
